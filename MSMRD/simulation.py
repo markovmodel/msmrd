@@ -1,9 +1,9 @@
 import numpy as np
-from MSMreaddy.integrator import integrator as MSMreaddy_integrator
+from MSMRD.integrator import integrator as MSMRD_integrator
 
 class simulation:
     def __init__(self, integrator):
-        assert isinstance(integrator, MSMreaddy_integrator)
+        assert isinstance(integrator, MSMRD_integrator)
         self.integrator=integrator
 
     def run(self, steps, sample = False, samplingInterval = 1):

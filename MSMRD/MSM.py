@@ -5,7 +5,7 @@ class MSM:
     def __init__(self, T, centers, exitR = 0., MSMradius=0., lagtime=1):
         self.T = T
         self.centers = centers
-        self.MSMradius=MSMradius
+        self.MSMradius = MSMradius
         self.lagtime = lagtime
         self.states = self.T.shape[0]
         self.exitStates = np.where(np.linalg.norm(self.centers, axis=1) > exitR)[0]

@@ -11,7 +11,7 @@ class MSMreaddy(integrator):
         self.pb = p2
         self.pc = p3
         self.timestep = timestep
-        self.Re = Re
+        self.Re = Re #entry radius
         self.sampleSize = 8 #sample consists of (time, p1, p2, p3, MSMstate)
         self.MSMactive = False
 

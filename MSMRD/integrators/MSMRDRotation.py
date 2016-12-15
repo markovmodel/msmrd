@@ -2,7 +2,7 @@ import numpy as np
 from ..integrator import integrator
 
 
-class MSMreaddy(integrator):
+class MSMRD(integrator):
     def __init__(self,  MSM, box, p1, p2, p3, timestep, Re):
         self.MSM = MSM
         self.box = box

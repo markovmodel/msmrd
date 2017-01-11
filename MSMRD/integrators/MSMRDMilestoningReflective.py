@@ -2,14 +2,15 @@ import numpy as np
 from ..integrator import integrator
 
 
-class MSMreaddy_SP_reflective(integrator):
-    def __init__(self,  MSM, radius, p, timestep, Re):
+class MSMRDMilestoningReflective(integrator):
+    def __init__(self,  MSM, radius, p, timestep, regionMap):
         self.MSM = MSM
         self.radius = radius
         self.dim = p.position.size
         self.p = p
         self.timestep = timestep
-        self.Re = Re #entry radius
+        self.Re = regionMap['rentry_int'][1] #get entry radius directly from region map object
+        self.regionMap = regionMap
         self.sampleSize = 4 #sample consists of (time, p, MSMstate)
         self.MSMactive = False
 
@@ -38,7 +39,17 @@ class MSMreaddy_SP_reflective(integrator):
         self.MSMactive = True
 
     def exitMSM(self):
-        self.p.position = np.copy(self.MSM.centers[self.MSM.state,:])
+        #Exit MSM domain: pick new position from uniform distribution on an anulus segment
+        rand = np.random.random(2)
+        thetaL = self.regionMap[self.MSM.state][0][0]
+        thetaU = self.regionMap[self.MSM.state][0][1]
+        radiusL = self.regionMap[self.MSM.state][1][0]
+        radiusU = self.regionMap[self.MSM.state][1][1]
+        theta = rand[0]*(thetaU-thetaL) + thetaL
+        radius = np.sqrt(rand[1]*(radiusU**2-radiusL**2)+radiusL**2)
+        newPosition = radius*np.array([np.cos(theta), np.sin(theta)])
+        assert newPosition.shape[0] == 2
+        self.p.position = newPosition
         self.MSMactive = False
 
     def integrate(self):

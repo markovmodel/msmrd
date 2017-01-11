@@ -2,19 +2,21 @@ import numpy as np
 from ..integrator import integrator
 
 
-class MSMreaddy_SP(integrator):
-    def __init__(self,  MSM, box, p, timestep, Re):
+class MSMRDMilestoning(integrator):
+    def __init__(self,  MSM, radius, p, timestep, Re, regionMap):
         self.MSM = MSM
-        self.box = box
+        self.radius = radius
         self.dim = p.position.size
         self.p = p
         self.timestep = timestep
         self.Re = Re #entry radius
+        self.regionMap = regionMap
         self.sampleSize = 4 #sample consists of (time, p, MSMstate)
         self.MSMactive = False
 
     def above_threshold(self, threshold):
         #assume that threshold is larger than the MSM radius
+        #this function is only used for the MFTP computation
         if self.MSMactive:
             return np.linalg.norm(self.MSM.centers[self.MSM.state]) > threshold
         else:
@@ -22,20 +24,33 @@ class MSMreaddy_SP(integrator):
 
     def propagateDiffusion(self, particle):
         sigma = np.sqrt(2. * self.timestep * particle.D)
-        dr = np.random.normal(0., sigma, self.dim)
-        assert len(dr) == self.dim
-        particle.position += dr
+        rNew = self.radius + 1.
+        while rNew > self.radius:
+            dr = np.random.normal(0., sigma, self.dim)
+            assert len(dr) == self.dim
+            newPosition = particle.position + dr
+            rNew = np.linalg.norm(newPosition)
+        particle.position = newPosition
 
     def enterMSM(self):
+        #Enter MSM domain: search for state closest to particle postion and replace particle by MSM state.
         R = self.p.position
         entranceState = (np.linalg.norm(self.MSM.centers[self.MSM.entryStates] - R, axis=1)).argmin()
         self.MSM.state = self.MSM.entryStates[entranceState]
-        #print self.MSM.state
         self.MSM.exit = False
         self.MSMactive = True
 
     def exitMSM(self):
-        self.p.position = np.copy(self.MSM.centers[self.MSM.state,:])
+        #Exit MSM domain: pick new position from uniform distirbution on an annulus segment
+        rand = np.random.random(2)
+        thetaL = self.regionMap[self.MSM.state][0]
+        thetaU = self.regionMap[self.MSM.state][1]
+        radiusL = self.regionMap['rexit_int'][0]
+        radiusU = self.regionMap['rexit_int'][1]
+        theta = rand[0]*(thetaU-thetaL) + thetaL
+        radius = np.sqrt(rand[1]*(radiusU**2-radiusL**2)+raiusL**2)
+        newPosition = np.array(radius*[np.cos(theta),np.sin(theta)])
+        self.p.position = newPosition
         self.MSMactive = False
 
     def integrate(self):
@@ -45,7 +60,6 @@ class MSMreaddy_SP(integrator):
                 self.exitMSM()
         elif not self.MSMactive:
             self.propagateDiffusion(self.p)
-            self.box.reducePeriodic(self.p)
             if np.linalg.norm(self.p.position) < self.Re:
                 self.enterMSM()
 

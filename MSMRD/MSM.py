@@ -14,6 +14,7 @@ class MSM:
         self.state = -1
         self.exit = False
 
+    @classmethod
     def frompath(self, path, exitR = 0., MSMradius=0., lagtime=1):
         T = np.loadtxt(path + '_Tmatrix.txt')
         centers = np.loadtxt(path + '_centers.txt')

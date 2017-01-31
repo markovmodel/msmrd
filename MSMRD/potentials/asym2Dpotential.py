@@ -28,7 +28,7 @@ class asym2Dpotential(object):
         return output
 
     # Calculate gradient of the potential
-    def gradpot(self,r):
+    def force(self,r):
         x, y = r
         outx, outy = [0,0]
         for i in range(len(self.minima)):
@@ -46,7 +46,7 @@ class asym2Dpotential(object):
 
     # Calculate norm of gradient of the potential
     def gradnorm(self,r):
-        outx, outy = self.gradpot(r)
+        outx, outy = self.force(r)
         out = np.sqrt(outx*outx + outy*outy)
         return out
     
@@ -68,21 +68,45 @@ class asym2Dpotential(object):
         
     # Make contour plot of potential or gradient (numcontour = num contours)
     # grad = boolean to plot gradient or potential
-    def plot_contour(self,xmin,xmax,ymin,ymax,zmin,zmax,numcontour,grad):
-        if grad == True:
-            xx, yy, zz = self.grad_in_grid(xmin,xmax,ymin,ymax)
-        else:
+    def plot_contour(self, bounds=None, numcontour=None, grad=None):
+        # set default values for bounds and number of countours
+        if bounds == None:
+            if grad == None:
+                bounds = [-3,3,-3,3,-3,0]
+            else:
+                bounds = [-3,3,-3,3,0,3]
+        xmin = bounds[0]; xmax = bounds[1]
+        ymin = bounds[2]; ymax = bounds[3]
+        zmin = bounds[4]; zmax = bounds[5]
+        if numcontour == None:
+            numcontour = 25
+        # calculate and plot potential or gradient
+        if grad == None:
             xx, yy, zz = self.potential_in_grid(xmin,xmax,ymin,ymax)
+        elif grad == True:
+            xx, yy, zz = self.grad_in_grid(xmin,xmax,ymin,ymax)         
         plt.contour(xx, yy, zz, numcontour)
         plt.axes().set_aspect('equal')
     
     # Make 3d plot of potential, res lower =  better resolution
     # grad = boolean to plot gradient or potential
-    def plot_3d(self,xmin,xmax,ymin,ymax,zmin,zmax,res,grad):
-        if grad == True:
-            xx, yy, zz = self.grad_in_grid(xmin,xmax,ymin,ymax)
-        else:
+    def plot_3d(self,bounds=None, res=None, grad=None):
+        # set default values for bounds and resolution
+        if bounds == None:
+            if grad == None:
+                bounds = [-3,3,-3,3,-3,0]
+            else:
+                bounds = [-3,3,-3,3,0,3]
+        xmin = bounds[0]; xmax = bounds[1]
+        ymin = bounds[2]; ymax = bounds[3]
+        zmin = bounds[4]; zmax = bounds[5]
+        if res == None:
+            res = 2
+        # calculate and plot potential or gradient
+        if grad == None:
             xx, yy, zz = self.potential_in_grid(xmin,xmax,ymin,ymax)
+        elif grad == True:
+            xx, yy, zz = self.grad_in_grid(xmin,xmax,ymin,ymax)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.set_zlim(zmin, zmax)

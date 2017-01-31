@@ -14,7 +14,8 @@ class asym2Dpotential(object):
         self.sigmas = sigmas
 
     # Define potential as sum of inverted Gaussians from minimas and variances
-    def potential(self,x,y):
+    def potential(self,r):
+        x, y = r
         output = 0
         for i in range(len(self.minima)):
             mx = self.minima[i][0]
@@ -27,9 +28,9 @@ class asym2Dpotential(object):
         return output
 
     # Calculate gradient of the potential
-    def gradpot(self,x,y):
-        outx = 0
-        outy = 0
+    def gradpot(self,r):
+        x, y = r
+        outx, outy = [0,0]
         for i in range(len(self.minima)):
             mx = self.minima[i][0]
             my = self.minima[i][1]
@@ -44,8 +45,8 @@ class asym2Dpotential(object):
         return [outx,outy]
 
     # Calculate norm of gradient of the potential
-    def gradnorm(self,x,y):
-        outx, outy = self.gradpot(x,y)
+    def gradnorm(self,r):
+        outx, outy = self.gradpot(r)
         out = np.sqrt(outx*outx + outy*outy)
         return out
     
@@ -54,7 +55,7 @@ class asym2Dpotential(object):
         x = np.arange(xmin,xmax,(xmax-xmin)/100.0)
         y = np.arange(ymin,ymax,(ymax-ymin)/100.0)
         xx, yy = np.meshgrid(x,y)
-        zz = self.potential(xx,yy)
+        zz = self.potential([xx,yy])
         return xx, yy, zz
     
     # Calculate grid and gradient values in the grid
@@ -62,7 +63,7 @@ class asym2Dpotential(object):
         x = np.arange(xmin,xmax,(xmax-xmin)/100.0)
         y = np.arange(ymin,ymax,(ymax-ymin)/1000.0)
         xx, yy = np.meshgrid(x,y)
-        zz = self.gradnorm(xx,yy)
+        zz = self.gradnorm([xx,yy])
         return xx, yy, zz
         
     # Make contour plot of potential or gradient (numcontour = num contours)

@@ -4,14 +4,17 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # Construct asymmetric 2D potential from Gaussian, calculate gradients and plots.
 class asym2Dpotential(object):
-    def __init__(self, minima=None, sigmas=None):
+    def __init__(self, minima=None, sigmas=None, scalefactor=None):
         if minima == None:
             minima = [[0.0,0.0], [1.0,0.0] , [1.1, 1.0], [-0.1,0.9], [-1.3,0.8], \
                        [-1.0,-0.2], [-0.6,-1.0], [0.9,-0.8], [0.2,-1.5]]
             sigmas = [[0.26,0.26],[0.35,0.35],  [0.4,0.3],  [0.4,0.23], [0.25,0.35], \
                        [0.25,0.32],   [0.4,0.28], [0.4,0.3], [0.21,0.45]]
+	if scalefactor == None:
+		scalefactor = 0.8
         self.minima = minima
         self.sigmas = sigmas
+	self.scalefactor = scalefactor
 
     # Define potential as sum of inverted Gaussians from minimas and variances
     def potential(self,r):
@@ -25,7 +28,7 @@ class asym2Dpotential(object):
             gauss = np.exp(-(x - mx)**2/(2*sigx**2)-(y - my)**2/(2*sigy**2))
             gauss = gauss/(2*np.pi*sigx*sigy)
             output = output - gauss
-        return output
+        return self.scalefactor*output
 
     # Calculate gradient of the potential
     def force(self,r):
@@ -42,7 +45,7 @@ class asym2Dpotential(object):
             grady = grady/(2*np.pi*sigx*sigy)
             outx = outx - gradx
             outy = outy - grady
-        return [outx,outy]
+        return np.array([outx,outy])
 
     # Calculate norm of gradient of the potential
     def gradnorm(self,r):

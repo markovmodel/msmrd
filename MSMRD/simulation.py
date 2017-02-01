@@ -24,6 +24,8 @@ class simulation:
 	bufindex = 0
 	# obtain total number of samples and number of buffers
         samples = np.ceil(1.0*steps / samplingInterval)
+	if samples < buffersize:
+		buffersize = int(samples)
 	lastbuffer = np.ceil(1.0*samples / buffersize)
 	# init traj arra with maxsize as buffersize
         self.traj = np.zeros((buffersize, self.integrator.sampleSize))

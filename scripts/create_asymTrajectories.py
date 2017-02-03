@@ -24,7 +24,7 @@ processes = []
 print("Simulation started")
 for j in range(0, 4):
     for i in range(0, 4):
-	print("Process " i+4*j " running")
+	print("Process " + str(i+4*j) + " running")
         p = Process(target = run_simulation, args=(i+4*j,))
         p.start()
         processes.append(p)

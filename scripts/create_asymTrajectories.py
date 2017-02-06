@@ -6,14 +6,14 @@ from multiprocessing import Process
 
 def run_simulation(runNumber):
     global correlation, runtimes
+    np.random.seed()
     runtime = int(1e7)
     asympot = potentials.asym2Dpotential()
-    x0 = 4*np.random.rand() - 2
-    y0 = 4*np.random.rand() - 2
+    x0 = 4.0*np.random.rand() - 2.0
+    y0 = 4.0*np.random.rand() - 2.0
     r1 = np.array([x0, y0])
     p1 = mrd.particle(r1, 1.0)
     box = mrd.box(2.)
-    np.random.seed()
     integrator = integrators.brownianDynamicsSp(asympot, box, p1, 0.0001, 1.0)
     sim = mrd.simulation(integrator)
     outfile = '../data/asym2D/2DasymTrajsLong_'+ str(runNumber)+ '.txt'

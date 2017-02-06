@@ -8,9 +8,11 @@ def run_simulation(runNumber):
     global correlation, runtimes
     runtime = int(1e7)
     asympot = potentials.asym2Dpotential()
-    r1 = np.array([2., 2.])
+    x0 = 4*np.random.rand() - 2
+    y0 = 4*np.random.rand() - 2
+    r1 = np.array([x0, y0])
     p1 = mrd.particle(r1, 1.0)
-    box = mrd.box(8.)
+    box = mrd.box(2.)
     np.random.seed()
     integrator = integrators.brownianDynamicsSp(asympot, box, p1, 0.0001, 1.0)
     sim = mrd.simulation(integrator)

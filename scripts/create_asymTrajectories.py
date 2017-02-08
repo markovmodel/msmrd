@@ -7,8 +7,8 @@ from multiprocessing import Process
 def run_simulation(runNumber):
     global correlation, runtimes
     np.random.seed()
-    runtime = int(3e6)
-    asympot = potentials.asym2Dpotential()
+    runtime = int(1e7)
+    asympot = potentials.asym2Dpotential(scalefactor = 0.7)
     x0 = 4.0*np.random.rand() - 2.0
     y0 = 4.0*np.random.rand() - 2.0
     r1 = np.array([x0, y0])

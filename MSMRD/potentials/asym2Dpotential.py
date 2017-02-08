@@ -45,7 +45,7 @@ class asym2Dpotential(object):
             grady = grady/(2*np.pi*sigx*sigy)
             outx = outx - gradx
             outy = outy - grady
-        return np.array([outx,outy])
+        return -np.array([outx,outy])
 
     # Calculate norm of gradient of the potential
     def gradnorm(self,r):

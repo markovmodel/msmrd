@@ -11,7 +11,7 @@ class asym2Dpotential(object):
             sigmas = [[0.3,0.3],[0.35,0.35],  [0.4,0.3],  [0.4,0.23], [0.25,0.35], \
                        [0.25,0.32],   [0.4,0.28], [0.4,0.3], [0.21,0.45]]
 	if scalefactor == None:
-		scalefactor = 0.2
+		scalefactor = 0.7
         self.minima = minima
         self.sigmas = sigmas
 	self.scalefactor = scalefactor

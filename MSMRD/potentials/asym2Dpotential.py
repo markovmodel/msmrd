@@ -30,7 +30,7 @@ class asym2Dpotential(object):
             output = output - gauss
         return self.scalefactor*output
 
-    # Calculate gradient of the potential
+    # Calculate minus gradient of the potential
     def force(self,r):
         x, y = r
         outx, outy = [0,0]

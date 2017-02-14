@@ -3,9 +3,9 @@ from ..integrator import integrator
 
 
 class brownianDynamicsSp(integrator):
-    def __init__(self,  potential, box, p1, timestep, temp):
+    def __init__(self,  potential, boundary, p1, timestep, temp):
         self.potential = potential
-        self.box = box
+        self.boundary = boundary
         self.dim = p1.position.size
         self.pa = p1
         self.timestep = timestep
@@ -14,15 +14,12 @@ class brownianDynamicsSp(integrator):
         self.traj = None
         self.sampleSize = 3 #sample has shape (time, reducedDistanceVector, energy)
 
-    def above_threshold(self, threshold):
-        return self.box.particleDistance(self.pa, self.pb) > threshold
-
     def integrate(self):
         #compute force from particle b on particle a
         force = self.potential.force(self.pa.position)
         dr1 = np.random.normal(0., self.sigmaA, self.dim) + force * self.timestep * self.pa.D / self.temp
         self.pa.position += dr1
-        self.box.reducePeriodic(self.pa)
+        self.boundary.reduce(self.pa)
 
     def sample(self, step):
         return [step*self.timestep, self.pa.position[0], self.pa.position[1]]

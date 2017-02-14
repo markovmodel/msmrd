@@ -45,7 +45,7 @@ class MSMRDSp(integrator):
                 self.exitMSM()
         elif not self.MSMactive:
             self.propagateDiffusion(self.p)
-            self.box.reducePeriodic(self.p)
+            self.box.reduce(self.p)
             if np.linalg.norm(self.p.position) < self.Re:
                 self.enterMSM()
 

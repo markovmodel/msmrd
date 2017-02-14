@@ -38,21 +38,21 @@ class MSMRD(integrator):
         R = self.MSM.centers[self.MSM.state,:]
         self.pa.position = self.pc.position
         self.pb.position = self.pc.position + R
-        self.box.reducePeriodic(self.pb)
+        self.box.reduce(self.pb)
         self.MSMactive = False
 
     def integrate(self):
         if self.MSMactive:
             self.MSM.propagate()
             self.propagateDiffusion(self.pc)
-            self.box.reducePeriodic(self.pc)
+            self.box.reduce(self.pc)
             if self.MSM.exit:
                 self.exitMSM()
         elif not self.MSMactive:
             self.propagateDiffusion(self.pa)
-            self.box.reducePeriodic(self.pa)
+            self.box.reduce(self.pa)
             self.propagateDiffusion(self.pb)
-            self.box.reducePeriodic(self.pb)
+            self.box.reduce(self.pb)
             if self.box.particleDistance(self.pa, self.pb) < self.Re:
                 self.enterMSM()
 

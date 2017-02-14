@@ -27,9 +27,9 @@ class brownianDynamics(integrator):
         dr1 = np.random.normal(0., self.sigmaA, self.dim) + force * self.timestep * self.pa.D / self.temp
         dr2 = np.random.normal(0., self.sigmaB, self.dim) - force * self.timestep * self.pb.D / self.temp
         self.pa.position += dr1
-        self.box.reducePeriodic(self.pa)
+        self.box.reduce(self.pa)
         self.pb.position += dr2
-        self.box.reducePeriodic(self.pb)
+        self.box.reduce(self.pb)
 
     def sample(self, step):
         dr = self.box.periodicDistanceVector(self.pb.position, self.pa.position)

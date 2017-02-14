@@ -19,7 +19,7 @@ class box:
                 r[i] += self.boxsize
         return r
 
-    def reducePeriodic(self, particle):
+    def reduce(self, particle):
         r = self._reducePeriodic(particle.position)
         particle.position = r
 
@@ -56,3 +56,13 @@ class box:
             return distances
         elif len(dr.shape) == 1:
             return self._reducePeriodic(dr)
+
+class reflectiveRing:
+    def __init__(self, radius):
+        self.radius2 = radius*radius
+
+    #perform inversion on a circle to map the particle's position back into the domain
+    def reduce(self, particle):
+        r2 = np.linalg.norm(particle.position)
+        if r2 > self.radius2:
+            particle.position = particle.position * self.radius2/r2

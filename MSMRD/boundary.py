@@ -59,10 +59,10 @@ class box:
 
 class reflectiveRing:
     def __init__(self, radius):
-        self.radius2 = radius*radius
+        self.radius2 = radius**2
 
     #perform inversion on a circle to map the particle's position back into the domain
     def reduce(self, particle):
-        r2 = np.linalg.norm(particle.position)
+        r2 = np.linalg.norm(particle.position)**2
         if r2 > self.radius2:
             particle.position = particle.position * self.radius2/r2

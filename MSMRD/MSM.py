@@ -7,7 +7,7 @@ class MSM:
         self.centers = centers
         self.MSMradius = MSMradius
         self.lagtime = lagtime
-        self.states = self.T.shape[0]
+        self.states = self.T.shape[1]
         self.exitStates = np.where(np.linalg.norm(self.centers, axis=1) > exitR)[0]
         self.entryStates = np.where(np.linalg.norm(self.centers, axis=1) <= exitR)[0]
         #self.entryStates = np.where(np.logical_and(np.linalg.norm(self.centers, axis=1) < entryRadii[1], np.linalg.norm(self.centers,axis=1) > entryRadii[0]))[0]

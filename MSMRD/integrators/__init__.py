@@ -5,3 +5,5 @@ from .MSMRDSp import *
 from .MSMRDSpReflective import *
 from .MSMRDMilestoning import *
 from .MSMRDMilestoningReflective import *
+from .MSMRDexitToEntryReflectiveSp import *
+from .MSMRDexitSampling import *

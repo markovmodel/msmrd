@@ -1,4 +1,5 @@
 import numpy as np
+import h5py
 from MSMRD.integrator import integrator as MSMRD_integrator
 
 class simulation:
@@ -17,42 +18,45 @@ class simulation:
                     self.traj[j,:] = self.integrator.sample(i)
     
     # run code using a buffer to avoid computer overload while writing into file filename
-    def run_n_buffer(self, steps, sample = False, samplingInterval = 1, \
-	             filename="../data/trajs_data.txt", buffersize = int(1e5)):
-	# init number of current buffer and index of current buffer 	
-	numbuffer = 0
-	bufindex = 0
-	# obtain total number of samples and number of buffers
+    def run_n_buffer(self, steps, sample = False, samplingInterval = 1, filename="../data/trajs_data.txt", buffersize = int(1e5)):
+        # init number of current buffer and index of current buffer
+        numbuffer = 0
+        bufindex = 0
+        # obtain total number of samples and number of buffers
         samples = np.ceil(1.0*steps / samplingInterval)
-	if samples < buffersize:
-		buffersize = int(samples)
-	lastbuffer = np.ceil(1.0*samples / buffersize)
-	# init traj arra with maxsize as buffersize
+        if samples < buffersize:
+            buffersize = int(samples)
+        lastbuffer = np.ceil(1.0*samples / buffersize)
+        # init traj array with maxsize as buffersize
         self.traj = np.zeros((buffersize, self.integrator.sampleSize))
-	# open blank file and allow appending for buffer mode	
-	open(filename, "w")
-	f = open(filename, "a")
-	# loop over all steps and and write array to file when buffer is filled
+        # open blank file and allow appending for buffer mode
+        open(filename, "w")
+        #create and open file, overwrite if it exists
+        f = h5py.File(filename, 'a')
+        f.create_dataset('traj', (samples, self.integrator.sampleSize))
+        dset = f['traj']
+        # loop over all steps and and write array to file when buffer is filled
         for i in range(steps):
             self.integrator.integrate()
             if sample:
                 if not i % samplingInterval:
-		    bufindex = bufindex + 1 
+                    bufindex = bufindex + 1
                     j = i / samplingInterval - numbuffer*buffersize
                     self.traj[j,:] = self.integrator.sample(i)
-	    # empty to file when buffer is full and reinitialize traj array
-	    if (bufindex == buffersize):
-	    	bufindex = 0
-		numbuffer = numbuffer + 1
-		np.savetxt(f, self.traj)
-		if (numbuffer == lastbuffer - 1):
-			lastarray = int(samples - buffersize*numbuffer)
-			self.traj = np.zeros((lastarray, self.integrator.sampleSize))
-		elif (numbuffer != lastbuffer):
-			self.traj = np.zeros((buffersize, self.integrator.sampleSize))
-	# if last buffer size < buffersize, empty left over data to file	
-	if (bufindex != 0):	
-		np.savetxt(f,self.traj)
+        # empty to file when buffer is full and reinitialize traj array
+            if bufindex == buffersize:
+                bufindex = 0
+                dset[numbuffer*buffersize:(numbuffer+1)*buffersize] = self.traj
+                numbuffer = numbuffer + 1
+                if numbuffer == lastbuffer - 1:
+                    lastarray = int(samples - buffersize*numbuffer)
+                    self.traj = np.zeros((lastarray, self.integrator.sampleSize))
+                elif numbuffer != lastbuffer:
+                    self.traj = np.zeros((buffersize, self.integrator.sampleSize))
+        # if last buffer size < buffersize, empty left over data to file
+        if (bufindex != 0):
+            dset[-len(self.traj):] = self.traj
+        f.close()
 
     def run_mfpt(self, threshold):
         i = 0

@@ -118,7 +118,7 @@ class allTrajs(object):
         return self.milestonesarray
     
     # Calculate State discretization parameters into a dictionary to place  
-    # uniformly theparticle in the exit states in the hybrid model
+    # uniformly the particle in the exit states in the hybrid model
     def getRegionMap(self):
         self.regionMap[0] = 'Bound'
         # Add entry states to dictionary

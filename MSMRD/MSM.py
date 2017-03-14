@@ -21,7 +21,7 @@ class MSM:
         return self(T, centers, exitR, MSMradius, lagtime)
 
     def propagate(self):
-        self.state = np.random.choice(self.states, p=self.T[self.state])
+        self.state = int(np.random.choice(self.states, p=self.T[int(self.state)]))
         self.exit = np.in1d(self.state, self.exitStates)
 
     def allocateStates(self, traj):

@@ -1,7 +1,6 @@
 import numpy as np
 import h5py
 from MSMRD.integrator import integrator as MSMRD_integrator
-import sys
 
 class simulation:
     def __init__(self, integrator):
@@ -9,7 +8,7 @@ class simulation:
         self.integrator=integrator
 
     def run(self, steps, sample = False, samplingInterval = 1):
-        samples = np.ceil(1.0*steps / samplingInterval)
+        samples = int(np.ceil(1.0*steps / samplingInterval))
         self.traj = np.zeros((samples, self.integrator.sampleSize))
         for i in range(0,steps):
             self.integrator.integrate()
@@ -36,7 +35,6 @@ class simulation:
         f = h5py.File(filename, 'a')
         f.create_dataset('traj', (buffersize, self.integrator.sampleSize), maxshape=(None, self.integrator.sampleSize), chunks=True)
         dset = f['traj']
-        print sys.getsizeof(dset)
         # loop over all steps and and write array to file when buffer is filled
         for i in range(steps):
             self.integrator.integrate()
@@ -48,11 +46,9 @@ class simulation:
         # empty to file when buffer is full and reinitialize traj array
             if bufindex == buffersize:
                 bufindex = 0
+                numbuffer = numbuffer + 1
                 dset.resize(numbuffer*buffersize, axis=0)
                 dset[-buffersize:] = self.traj
-                print sys.getsizeof(f)
-                print sys.getsizeof(dset)
-                numbuffer = numbuffer + 1
                 if numbuffer == lastbuffer - 1:
                     lastarray = int(samples - buffersize*numbuffer)
                     self.traj = np.zeros((lastarray, self.integrator.sampleSize))

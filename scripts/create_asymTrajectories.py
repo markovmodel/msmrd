@@ -16,7 +16,7 @@ def run_simulation(runNumber):
     ringboundary = mrd.reflectiveRing(4.)
     integrator = integrators.brownianDynamicsSp(asympot, ringboundary, p1, 0.001, 1.0)
     sim = mrd.simulation(integrator)
-    outfile = '/srv/data/dibakma/MSMRD/asym2D/BDdata/2DasymTrajsLong_R4_RT1E9_dt001_SI10_'+ str(runNumber)+ '.h5'
+    outfile = '/srv/data/dibakma/MSMRD/asym2D/BDdata/2DasymTrajsLong_R4_RT1E9_dt001_SI10_rerun_'+ str(runNumber)+ '.h5'
     sim.run_n_buffer(runtime, sample=True, samplingInterval=10, \
                      filename = outfile, buffersize = int(1e3))
 
@@ -24,7 +24,7 @@ def run_simulation(runNumber):
 
 processes = []
 print("Simulation started")
-for j in range(0, 4):
+for j in range(0, 1):
     for i in range(0, 4):
 	print("Process " + str(i+4*j) + " running")
         p = Process(target = run_simulation, args=(i+4*j,))

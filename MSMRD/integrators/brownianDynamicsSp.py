@@ -9,10 +9,12 @@ class brownianDynamicsSp(integrator):
         self.dim = p1.position.size
         self.pa = p1
         self.timestep = timestep
+        self.time = 0.
         self.temp = temp
         self.sigmaA = np.sqrt(2 * self.timestep * self.pa.D)
         self.traj = None
         self.sampleSize = 3 #sample has shape (time, reducedDistanceVector, energy)
+        print 'new version'
 
     def integrate(self):
         #compute force from particle b on particle a

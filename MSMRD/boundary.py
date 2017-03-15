@@ -76,23 +76,31 @@ class reflectiveSphere:
         r2 = np.linalg.norm(particle.position)**2
         if r2 > self.radius2:
             # Create vector between old and new position
-	        r0 = oldpos
-	        dr = particle.position - oldpos
+            r0 = oldpos
+            dr = particle.position - r0
+            if np.linalg.norm(dr) == 0:
+                return
             # Calculate intersection point (r0 + al*dr intersection with sphere)
             A = np.dot(dr,dr)
-            B = 2*np.dot(r0,dr)
+            B = 2.0*np.dot(r0,dr)
             C = np.dot(r0,r0) - self.radius2
-            al1 = (-2.0*B + np.sqrt(B**2 - 4.0*A*C))/(2.0*A)
-            al2 = (-2.0*B + np.sqrt(B**2 - 4.0*A*C))/(2.0*A)		
-            al = min(al1,al2)
+            print dr, A, B**2 - 4.0*A*C
+            al1 = (-B + np.sqrt(B**2 - 4.0*A*C))/(2.0*A)
+            al2 = (-B - np.sqrt(B**2 - 4.0*A*C))/(2.0*A)
+	    print al1, al2
+	    if al1*al2 >= 0:		
+            	al = min(al1,al2)
+	    else:
+		al = max(al1,al2)
             intpt = r0 + al*dr
             # Calculate normal to sphere at intersection point
             nvec =  intpt/np.linalg.norm(intpt)
             # Norm of reflected vector
             # Calculate reflected vector (subtract normal projection twice and rescale)
-            vref = dr - 2*np.dt(dr,nvec)*nvec
+            vref = dr - 2*np.dot(dr,nvec)*nvec
             refnorm = np.linalg.norm(r0 + dr - intpt)
             vref = refnorm*vref/np.linalg.norm(vref)
+	    print refnorm
             # Translate reflected vector to intersection point and update
             ptref = intpt + vref
             particle.position = ptref

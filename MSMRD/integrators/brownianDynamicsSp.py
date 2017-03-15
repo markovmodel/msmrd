@@ -13,24 +13,23 @@ class brownianDynamicsSp(integrator):
         self.temp = temp
         self.sigmaA = np.sqrt(2 * self.timestep * self.pa.D)
         self.traj = None
-        self.sampleSize = 3 #sample has shape (time, reducedDistanceVector, energy)
-        print 'new version'
+        self.sampleSize = self.dim + 1 #sample has shape (time, position vector)
 
     def integrate(self):
         #compute force from particle b on particle a
         force = self.potential.force(self.pa.position)
         dr1 = np.random.normal(0., self.sigmaA, self.dim) + force * self.timestep * self.pa.D / self.temp
-	oldpos = self.pa.position
+	oldpos = 1.0*self.pa.position
         self.pa.position += dr1
         self.boundary.reduce(self.pa,oldpos)
 
     def sample(self, step):
 	if self.dim == 1:
-        	return [step*self.timestep, self.pa.position[0]]
+        	return [step, self.pa.position[0]]
 	if self.dim == 2:
-        	return [step*self.timestep, self.pa.position[0], self.pa.position[1]]
+        	return [step, self.pa.position[0], self.pa.position[1]]
 	if self.dim == 3:
-        	return [step*self.timestep, self.pa.position[0], self.pa.position[1], self.pa.position[2]]
+        	return [step, self.pa.position[0], self.pa.position[1], self.pa.position[2]]
 
     def compute_stationary_distribution(self, traj, MSM):
         #computes the stationary distribution clustered onto cluster centers of the MSM

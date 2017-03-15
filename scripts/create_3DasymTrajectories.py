@@ -7,7 +7,7 @@ from multiprocessing import Process
 def run_simulation(runNumber):
     global correlation, runtimes
     np.random.seed()
-    runtime = int(1e6)
+    runtime = int(1e5)
     asympot = potentials.asym3Dpotential(scalefactor = 0.7)
     x0 = 2.0*np.random.rand() - 1.0
     y0 = 2.0*np.random.rand() - 1.0
@@ -17,7 +17,7 @@ def run_simulation(runNumber):
     sphereboundary = mrd.reflectiveSphere(4.)
     integrator = integrators.brownianDynamicsSp(asympot, sphereboundary, p1, 0.0001, 1.0)
     sim = mrd.simulation(integrator)
-    outfile = '../data/asym2D/test_3DasymTrajs'+ str(runNumber)+ '.h5'
+    outfile = '../data/asym3D/test_3DasymTrajs'+ str(runNumber)+ '.h5'
     sim.run_n_buffer(runtime, sample=True, samplingInterval=10, \
                      filename = outfile, buffersize = int(1e3))
 

@@ -84,10 +84,8 @@ class reflectiveSphere:
             A = np.dot(dr,dr)
             B = 2.0*np.dot(r0,dr)
             C = np.dot(r0,r0) - self.radius2
-            print dr, A, B**2 - 4.0*A*C
             al1 = (-B + np.sqrt(B**2 - 4.0*A*C))/(2.0*A)
             al2 = (-B - np.sqrt(B**2 - 4.0*A*C))/(2.0*A)
-	    print al1, al2
 	    if al1*al2 >= 0:		
             	al = min(al1,al2)
 	    else:
@@ -100,7 +98,6 @@ class reflectiveSphere:
             vref = dr - 2*np.dot(dr,nvec)*nvec
             refnorm = np.linalg.norm(r0 + dr - intpt)
             vref = refnorm*vref/np.linalg.norm(vref)
-	    print refnorm
             # Translate reflected vector to intersection point and update
             ptref = intpt + vref
             particle.position = ptref

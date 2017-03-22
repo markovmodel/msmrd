@@ -17,7 +17,7 @@ def run_simulation(runNumber):
     sphereboundary = mrd.reflectiveSphere(4.)
     integrator = integrators.brownianDynamicsSp(asympot, sphereboundary, p1, 0.001, 1.0)
     sim = mrd.simulation(integrator)
-    outfile = '../data/asym3D/3DasymTrajs_R4_RT1e7_dt001_si10_'+ str(runNumber)+ '.h5'
+    outfile = '../data/asym3D/test3DasymTrajs_R4_RT1e7_dt001_si10_'+ str(runNumber)+ '.h5'
     sim.run_n_buffer(runtime, sample=True, samplingInterval=10, \
                      filename = outfile, buffersize = int(1e3))
 

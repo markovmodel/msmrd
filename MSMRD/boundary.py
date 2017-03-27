@@ -19,7 +19,7 @@ class box:
                 r[i] += self.boxsize
         return r
 
-    def reduce(self, particle):
+    def reduce(self, particle, oldpos):
         r = self._reducePeriodic(particle.position)
         particle.position = r
 
@@ -62,7 +62,64 @@ class reflectiveRing:
         self.radius2 = radius**2
 
     #perform inversion on a circle to map the particle's position back into the domain
-    def reduce(self, particle):
+    def reduce(self, particle, oldpos):
         r2 = np.linalg.norm(particle.position)**2
         if r2 > self.radius2:
             particle.position = particle.position * self.radius2/r2
+
+class reflectiveSphere:
+    def __init__(self, radius):
+        self.radius2 = radius**2
+
+    #do reflective boundary condition
+    def reduce(self, particle, oldpos):
+        r2 = np.linalg.norm(particle.position)**2
+        if r2 > self.radius2:
+            # Create vector between old and new position
+            r0 = oldpos
+            dr = particle.position - r0
+            if np.linalg.norm(dr) == 0:
+                return
+            # Calculate intersection point (r0 + al*dr intersection with sphere)
+            A = np.dot(dr,dr)
+            B = 2.0*np.dot(r0,dr)
+            C = np.dot(r0,r0) - self.radius2
+	    if  B**2 - 4.0*A*C <= 0: 	    
+	    	print A, B, C, r0, B**2 - 4.0*A*C
+            al = (-B + np.sqrt(B**2 - 4.0*A*C))/(2.0*A) # take only the not always negative root
+            intpt = r0 + al*dr
+            # Calculate normal to sphere at intersection point
+            nvec =  intpt/np.linalg.norm(intpt)
+            # Norm of reflected vector
+            # Calculate reflected vector (subtract normal projection twice and rescale)
+            vref = dr - 2*np.dot(dr,nvec)*nvec
+            refnorm = np.linalg.norm(r0 + dr - intpt)
+            vref = refnorm*vref/np.linalg.norm(vref)
+            # Translate reflected vector to intersection point and update
+            ptref = intpt + vref
+            particle.position = ptref
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

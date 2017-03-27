@@ -16,10 +16,15 @@ class MSMRDexitSampling(integrator):
         self.interactionRadius = parameters['interactionRadius']
         self.bathRadius = parameters['bathRadius']
         self.NangularPartitions = parameters['NangularPartitions']
+        self.entryRings = parameters['entryRings']
+        self.exitRings = parameters['exitRings']
+        self.radialIncrementEntry = (self.entryRadius - self.interactionRadius)/float(self.entryRings)
+        self.radialIncrementExit = (self.bathRadius - self.entryRadius)/float(self.exitRings)
         self.angularIncrement = float(2.*np.pi/ self.NangularPartitions)
         self.NCenters = parameters['NCenters']
         self.sampleSize = 4 #sample consists of (time, p, MSMstate)
         self.MSMactive = False
+        self.lastState = -1
 
     def above_threshold(self, threshold):
         #assume that threshold is larger than the MSM radius
@@ -41,12 +46,14 @@ class MSMRDexitSampling(integrator):
 
     def enterMSM(self):
         #assign closest state as entry state in MSM domain
+        #test not allowing for direct transitions to inner MSM states
         R = self.p.position
         if np.linalg.norm(R) < self.interactionRadius:
             entranceState = (np.linalg.norm(self.MSM.centers - R, axis=1)).argmin()
         else:
+            entranceRing = int((np.linalg.norm(R)-self.interactionRadius) / self.radialIncrementEntry)
             theta = np.arctan2(R[0], R[1]) + np.pi #add pi for the angle to be in [0, 2pi]
-            entranceState = np.floor(theta / (2.*np.pi) * self.NangularPartitions) + self.NCenters
+            entranceState = np.floor(theta / (2.*np.pi) * self.NangularPartitions) + self.NCenters + entranceRing * self.NangularPartitions
         self.MSM.state = entranceState
         self.MSM.exit = False
         self.MSMactive = True
@@ -55,19 +62,34 @@ class MSMRDexitSampling(integrator):
         #Exit MSM domain: pick new position in last state the particle was in and perform 1 BD step that leaves the MSM domain
         assert(self.lastState >= self.NCenters)
         exitState = self.lastState - self.NCenters
-        if exitState < self.NangularPartitions:
-            thetaL = exitState * self.angularIncrement
-            theta = np.random.random()*(thetaL + self.angularIncrement) + thetaL
-            R = np.sqrt(np.random.random()*(self.entryRadius**2 - self.interactionRadius**2) + self.interactionRadius**2)
+        if exitState < self.NangularPartitions*self.exitRings:
+            #exit from entry state
+            exitRing = int(exitState / self.NangularPartitions)
+            thetaL = (exitState % self.NangularPartitions) * self.angularIncrement
+            theta = np.random.random()*(self.angularIncrement) + thetaL
+            Rlower = self.interactionRadius + exitRing * self.radialIncrementEntry
+            Rupper = Rlower + self.radialIncrementEntry
+            R = np.sqrt(np.random.random()*(Rupper**2 - Rlower**2) + Rlower**2)
         else :
-            thetaL = (exitState - self.NangularPartitions) * self.angularIncrement
-            theta = np.random.random()*self.angularIncrement + thetaL
-            R = np.sqrt(np.random.random()*(self.bathRadius**2 - self.entryRadius**2) + self.entryRadius**2)
+            #exit from exit state
+            exitRing = int(exitState / self.NangularPartitions)
+            thetaL = (exitState%self.NangularPartitions)  * self.angularIncrement
+            theta = np.random.random()*(self.angularIncrement) + thetaL
+            Rlower = self.interactionRadius + exitRing * self.radialIncrementExit
+            Rupper = Rlower + self.radialIncrementExit
+            R = np.sqrt(np.random.random()*(Rupper**2 - Rlower**2) + Rlower**2)
         internalPosition = R*np.array([np.cos(theta), np.sin(theta)])
         newPosition = np.zeros(2)
+        exitSigma = self.sigma * np.sqrt(self.MSM.lagtime)
+        counter = 0
         while np.linalg.norm(newPosition) < self.bathRadius:
-            dr = np.random.normal(0., self.sigma, self.dim)
+            counter += 1 
+            dr = np.random.normal(0., exitSigma, self.dim)
+            assert(len(dr) == 2)
             newPosition = internalPosition + dr
+            if counter > 10000:
+                print 'no exit position found'
+                break
         assert newPosition.shape[0] == 2
         self.p.position = newPosition
         self.MSMactive = False

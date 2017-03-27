@@ -39,10 +39,10 @@ class simulation:
         for i in range(steps):
             self.integrator.integrate()
             if sample:
-                if not i % samplingInterval:
+                if i % int(samplingInterval)==0:
                     bufindex = bufindex + 1
                     j = i / samplingInterval - numbuffer*buffersize
-                    self.traj[j,:] = self.integrator.sample(i)
+                    self.traj[j,:] = np.copy(self.integrator.sample(i))
         # empty to file when buffer is full and reinitialize traj array
             if bufindex == buffersize:
                 bufindex = 0
@@ -65,6 +65,20 @@ class simulation:
         while self.integrator.above_threshold(threshold):
             self.integrator.integrate()
             i+=1
+        return i*self.integrator.timestep
+
+    def run_mfpt_point(self, point, radius):
+        i = 0
+        while self.integrator.outside_radius(point, radius):
+            self.integrator.integrate()
+            i+=1
+        return i*self.integrator.timestep
+
+    def run_mfpt_state(self, state):
+        i=0
+        while self.integrator.MSM.state != state:
+            self.integrator.integrate()
+            i += 1
         return i*self.integrator.timestep
 
 

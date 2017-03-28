@@ -43,3 +43,12 @@ class brownianDynamicsSp(integrator):
         #normalize
         counts /= float(counts.sum())
         return counts
+<<<<<<< HEAD
+
+    def above_threshold(self, threshold):
+        return np.linalg.norm(self.pa.position) < threshold
+
+    def outside_radius(self, point, radius):
+        return np.linalg.norm(self.pa.position - point) > radius
+=======
+>>>>>>> refs/remotes/origin/master

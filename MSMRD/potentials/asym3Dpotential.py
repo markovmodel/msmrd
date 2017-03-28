@@ -84,7 +84,7 @@ class asym3Dpotential(object):
         
     # Make contour plot of potential or gradient (numcontour = num contours)
     # grad = boolean to plot gradient or potential
-    def plot_contour(self, zcut, numcontour,grad):
+    def plot_contour(self, zcut, numcontour, grad, fill):
         xmin, xmax, ymin, ymax = [-3,3,-3,3]
         # set default number of countours
         if numcontour == None:
@@ -94,8 +94,20 @@ class asym3Dpotential(object):
             xx, yy, zz = self.potential_in_grid(xmin,xmax,ymin,ymax,zcut)
         elif grad == True:
             xx, yy, zz = self.grad_in_grid(xmin,xmax,ymin,ymax,zcut)
-        contours = np.linspace(-2.0,2.0,numcontour)
-        plt.contour(xx, yy, zz, levels=contours)
+        if fill == True:
+            levels1 = np.linspace(-10,0,150)
+            if grad == True:
+                levels1 = np.linspace(-6,6,150)
+            plt.contourf(xx, yy, zz, levels = levels1)
+            #plt.colorbar(format='%.2f')
+            plt.clim(-3,0)
+        if grad == True and fill == True:
+            plt.clim(-6,6)
+        contours = np.linspace(-10.0,0.5,numcontour)
+        contplot = plt.contour(xx, yy, zz, levels=contours, colors='k')
+        for c in contplot.collections:
+            c.set_linestyle('solid')
+            c.set_linewidths(0.7)
         plt.axes().set_aspect('equal')
         plt.xlabel('x')
         plt.ylabel('y')
@@ -105,4 +117,5 @@ class asym3Dpotential(object):
         mainplot = self.plot_contour
         interact(mainplot, zcut = widgets.FloatSlider(value=0.0,min=-2.0,max=2.0),
                    numcontour = widgets.IntSlider(value=25,min=5,max=100),
-                   grad = widgets.Checkbox(value=False, description='Plot gradient'))
+                   grad = widgets.Checkbox(value=False, description='Plot gradient'),
+                   fill = widgets.Checkbox(value=False, description='Fill'))

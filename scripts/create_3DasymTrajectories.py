@@ -8,7 +8,7 @@ def run_simulation(runNumber):
     global correlation, runtimes
     np.random.seed()
     runtime = int(1e7)
-    asympot = potentials.asym3Dpotential(scalefactor = 0.7)
+    asympot = potentials.asym3Dpotential(scalefactor = 2.0)
     x0 = 4.0*np.random.rand() - 2.0
     y0 = 4.0*np.random.rand() - 2.0
     z0 = 4.0*np.random.rand() - 2.0

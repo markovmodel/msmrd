@@ -84,9 +84,11 @@ class reflectiveSphere:
             A = np.dot(dr,dr)
             B = 2.0*np.dot(r0,dr)
             C = np.dot(r0,r0) - self.radius2
-	    if  B**2 - 4.0*A*C <= 0: 	    
-	    	print A, B, C, r0, B**2 - 4.0*A*C
-            al = (-B + np.sqrt(B**2 - 4.0*A*C))/(2.0*A) # take only the not always negative root
+            discriminant = B**2 - 4.0*A*C
+            if  discriminant <= 0: 	    
+                print A, B, C, r0, B**2 - 4.0*A*C
+                discriminant = 0
+            al = (-B + np.sqrt(discriminant))/(2.0*A) # take only the not always negative root
             intpt = r0 + al*dr
             # Calculate normal to sphere at intersection point
             nvec =  intpt/np.linalg.norm(intpt)

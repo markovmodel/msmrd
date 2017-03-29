@@ -56,4 +56,4 @@ for j in range(0, 2):
         p.join()
 '''
 
-pickle.dump(MFPTS, open('mfpts_10runs_01dt.p', 'wa'))
+#pickle.dump(MFPTS, open('mfpts_10runs_01dt.p', 'wa'))

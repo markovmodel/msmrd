@@ -78,7 +78,7 @@ class MSMRDexitSampling(integrator):
             Rlower = self.interactionRadius + exitRing * self.radialIncrementExit
             Rupper = Rlower + self.radialIncrementExit
             R = np.sqrt(np.random.random()*(Rupper**2 - Rlower**2) + Rlower**2)
-        internalPosition = R*np.array([np.cos(theta), np.sin(theta)])
+        internalPosition = R*np.array([np.cos(theta+np.pi), np.sin(theta+np.pi)])
         newPosition = np.zeros(2)
         exitSigma = self.sigma * np.sqrt(self.MSM.lagtime)
         counter = 0

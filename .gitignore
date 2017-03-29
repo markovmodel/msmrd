@@ -58,3 +58,6 @@ target/
 
 # vim
 *.swp
+
+# serialized objects
+*.p

@@ -52,7 +52,7 @@ class MSMRDexitSampling(integrator):
             entranceState = (np.linalg.norm(self.MSM.centers - R, axis=1)).argmin()
         else:
             entranceRing = int((np.linalg.norm(R)-self.interactionRadius) / self.radialIncrementEntry)
-            theta = np.arctan2(R[0], R[1]) + np.pi #add pi for the angle to be in [0, 2pi]
+            theta = np.arctan2(R[1], R[0]) + np.pi #add pi for the angle to be in [0, 2pi]
             entranceState = np.floor(theta / (2.*np.pi) * self.NangularPartitions) + self.NCenters + entranceRing * self.NangularPartitions
         self.MSM.state = entranceState
         self.MSM.exit = False

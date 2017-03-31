@@ -6,7 +6,7 @@ setup(name='MSMRD',
       author='Manuel Dibak',
       author_email='manuel.dibak@fu-berlin.de',
       url='',
-      packages=['MSMRD', 'MSMRD.analysis', 'MSMRD.potentials', 'MSMRD.integrators', 'MSMRD.trajectories'],
+      packages=['MSMRD', 'MSMRD.analysis', 'MSMRD.potentials', 'MSMRD.integrators', 'MSMRD.trajectories', 'MSMRD.discretization'],
       test_suite='nose.collector',
       tests_require=['nose']
       )

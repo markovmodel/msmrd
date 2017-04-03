@@ -92,7 +92,7 @@ class reflectiveSphere:
             C = np.dot(r0,r0) - self.radius2
             discriminant = B**2 - 4.0*A*C
             if  discriminant <= 0: 	    
-                print A, B, C, r0, B**2 - 4.0*A*C
+                #print A, B, C, r0, B**2 - 4.0*A*C
                 discriminant = 0
             al = (-B + np.sqrt(discriminant))/(2.0*A) # take only the not always negative root
             intpt = r0 + al*dr

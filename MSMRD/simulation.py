@@ -7,7 +7,7 @@ class simulation:
         assert isinstance(integrator, MSMRD_integrator)
         self.integrator=integrator
 
-    def run(self, steps, sample = False, samplingInterval = 1):
+    def run(self, steps, sample = False, samplingInterval = 1, filename=None):
         samples = int(np.ceil(1.0*steps / samplingInterval))
         self.traj = np.zeros((samples, self.integrator.sampleSize))
         for i in range(0,steps):
@@ -16,6 +16,11 @@ class simulation:
                 if not i % samplingInterval:
                     j = i / samplingInterval
                     self.traj[j,:] = self.integrator.sample(i)
+        if filename != None:
+            f = h5py.File(filename, 'a')
+            dset = f.create_dataset('traj', (samples, self.integrator.sampleSize))
+            dset[:] = self.traj
+            f.close()
     
     # run code using a buffer to avoid computer overload while writing into file filename
     def run_n_buffer(self, steps, sample = False, samplingInterval = 1, filename="../data/trajs_data.txt", buffersize = int(1e5)):
@@ -33,8 +38,7 @@ class simulation:
         open(filename, "w")
         #create and open file, overwrite if it exists
         f = h5py.File(filename, 'a')
-        f.create_dataset('traj', (buffersize, self.integrator.sampleSize), maxshape=(None, self.integrator.sampleSize), chunks=True)
-        dset = f['traj']
+        dset = f.create_dataset('traj', (samples, self.integrator.sampleSize), chunks = (buffersize, self.integrator.sampleSize))
         # loop over all steps and and write array to file when buffer is filled
         for i in range(steps):
             self.integrator.integrate()
@@ -47,8 +51,9 @@ class simulation:
             if bufindex == buffersize:
                 bufindex = 0
                 numbuffer = numbuffer + 1
-                dset.resize(numbuffer*buffersize, axis=0)
-                dset[-buffersize:] = self.traj
+                dset[(numbuffer-1)*buffersize:numbuffer*buffersize] = self.traj
+                #dset.resize(numbuffer*buffersize, axis=0)
+                #dset[-buffersize:] = self.traj
                 if numbuffer == lastbuffer - 1:
                     lastarray = int(samples - buffersize*numbuffer)
                     self.traj = np.zeros((lastarray, self.integrator.sampleSize))
@@ -56,7 +61,7 @@ class simulation:
                     self.traj = np.zeros((buffersize, self.integrator.sampleSize))
         # if last buffer size < buffersize, empty left over data to file
         if (bufindex != 0):
-            dset.resize(numbuffer*buffersize+len(self.traj), axis=0)
+            #dset.resize(numbuffer*buffersize+len(self.traj), axis=0)
             dset[-len(self.traj):] = self.traj
         f.close()
 

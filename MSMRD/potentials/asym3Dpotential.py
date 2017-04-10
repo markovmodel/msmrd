@@ -8,12 +8,12 @@ from ipywidgets import interact, widgets
 class asym3Dpotential(object):
     def __init__(self, minima=None, sigmas=None, scalefactor=None):
         if minima == None:
-            minima = [[0.0,0.0,0.0],   [1.0,0.0,-0.5] ,  [0.8, 0.9, 0.8], [-0.1,0.9,0.2], \
-                      [-1.0,-0.2,0.8], [-0.6,-1.0,1.2],  [0.9,-0.8,-0.7], [0.2,-1.3,1.3],
-                      [-1.3,0.8,-0.7], [-1.3, 1.0,1.4],  [1.2,0.3,-1.4],  [0.5,-0.5,0.8]]
-            sigmas = [[0.3,0.3,0.3],    [0.35,0.35,0.35],  [0.4,0.3,0.3], [0.4,0.23,0.21], \
-                      [0.25,0.32,0.34], [0.4,0.28,0.4],    [0.4,0.3,0.3], [0.21,0.45,0.32],
-                      [0.2,0.3,0.2],    [0.2,0.2,0.2],     [0.2,0.4,0.2], [0.2,0.3,0.3]]
+            minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
+                      [-1.0,-0.3,-0.4], [0.0,0.0,0.0],   [0.9,-0.1,-0.9], \
+                      [-0.7,-1.0,-0.3], [0.0,-0.9,0.1],  [0.8,-0.2,0.8]]
+            sigmas = [[0.3,0.3,0.3],    [0.35,0.35,0.35],  [0.4,0.3,0.3], \
+                      [0.25,0.32,0.34], [0.4,0.28,0.4],    [0.4,0.3,0.3], \
+                      [0.3,0.25,0.4],   [0.3,0.4,0.3],     [0.3,0.4,0.35]]
         if scalefactor == None:
             scalefactor = 0.7
         self.minima = minima
@@ -25,12 +25,8 @@ class asym3Dpotential(object):
         x, y, z = r
         output = 0
         for i in range(len(self.minima)):
-            mx = self.minima[i][0]
-            my = self.minima[i][1]
-            mz = self.minima[i][2]
-            sigx = self.sigmas[i][0]
-            sigy = self.sigmas[i][1]
-            sigz = self.sigmas[i][2]
+            mx, my, mz = self.minima[i]
+            sigx, sigy, sigz = self.sigmas[i]
             gauss = np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
             gauss = gauss/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
             output = output - gauss
@@ -41,18 +37,14 @@ class asym3Dpotential(object):
         x, y, z = r
         outx, outy, outz = [0,0,0]
         for i in range(len(self.minima)):
-            mx = self.minima[i][0]
-            my = self.minima[i][1]
-            mz = self.minima[i][2]
-            sigx = self.sigmas[i][0]
-            sigy = self.sigmas[i][1]
-            sigz = self.sigmas[i][2]
+            mx, my, mz = self.minima[i]
+            sigx, sigy, sigz = self.sigmas[i]
             gradx = -(2*(x-mx)/(2*sigx))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
             gradx = gradx/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
             grady = -(2*(y-my)/(2*sigy))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
             grady = grady/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
             gradz = -(2*(z-mz)/(2*sigz))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
-            gradz = grady/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
+            gradz = gradz/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
             outx = outx - gradx
             outy = outy - grady
             outz = outz - gradz

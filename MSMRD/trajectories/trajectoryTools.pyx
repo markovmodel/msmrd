@@ -10,9 +10,9 @@ cdef class trajDiscretizationCython:
     cdef object centers
     cdef public double innerMSMrad, bathRadOut, radialIncrementEntry, radialIncrementExit, radialIncrementBath
     cdef public int angularPartitions, entryRings, exitRings, bathRings, radialPartitions, Ncenters, Nstates, bathIndex
-    def __init__(self, np.ndarray[double, ndim=2] centers):
+    def __init__(self, np.ndarray[double, ndim=2] centers, double innerMSMrad):
         self.centers = centers
-        self.innerMSMrad = 2.0
+        self.innerMSMrad = innerMSMrad 
         self.angularPartitions = 48
         self.Ncenters = len(self.centers)
         self.Nstates = self.Ncenters + self.angularPartitions + 1

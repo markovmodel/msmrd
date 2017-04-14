@@ -100,7 +100,7 @@ cdef class trajDiscretizationCython:
                     #Start a new truncated trajectory. Maybe add previous state!
                     trajActive = True
                     if i > 0:
-                        currentTraj = [traj[i-1], traj[i]]
+                        currentTraj = [traj[i]] #[traj[i-1], traj[i]]
                     else:
                         currentTraj = [traj[i]]
             else:

@@ -51,7 +51,7 @@ cdef class trajDiscretizationCython:
         # Skip first elements, that might have udefined behavior.
         k = 0
         checker = self.getState(traj[0], -1)
-        while checker < 0 and k < len(traj)-2:
+        while checker < 0 and k < len(traj)-1:
             k += 1
             checker = self.getState(traj[k], -1)
         dTraj = np.empty(len(traj)-k, dtype=np.int32)
@@ -100,7 +100,7 @@ cdef class trajDiscretizationCython:
                     #Start a new truncated trajectory. Maybe add previous state!
                     trajActive = True
                     if i > 0:
-                        currentTraj = [traj[i]] #[traj[i-1], traj[i]]
+                        currentTraj = [traj[i-1], traj[i]]
                     else:
                         currentTraj = [traj[i]]
             else:

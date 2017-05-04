@@ -3,9 +3,12 @@ cimport numpy as np
 from multiprocessing import Pool
 cdef extern from "math.h":
     double atan2(double y, double x)
+    double acos(double x)
+    double sqrt(double x)
     
 cdef double PI = np.pi
 
+# Class with tools to discretize 2D trajectories
 cdef class trajDiscretizationCython:
     cdef object centers
     cdef public double innerMSMrad, bathRadOut, radialIncrementEntry, radialIncrementExit, radialIncrementBath
@@ -263,3 +266,74 @@ cdef class trajDiscretizationCython:
                 if np.any(innerTraj != innerTraj[0]):
                     cTrajs.append(innerTraj)
         return cTrajs
+
+        
+        
+# Class with tools to discretize 3D trajectories
+
+cdef class trajDiscretization3DCython:
+    cdef object centers
+    cdef public double boxSize, innerMSMrad
+    cdef public int numPartitions, Ncenters, Nstates
+    cdef public object regionsPerCollar, phiCuts
+    cdef public list thetaCuts
+    def __init__(self, np.ndarray[double, ndim=2] centers, double boxSize):
+        self.centers = centers
+        self.boxSize = boxSize
+        self.innerMSMrad = 0.5*boxSize 
+        self.numPartitions = 0
+        self.Ncenters = len(self.centers)
+        self.Nstates = self.Ncenters + self.numPartitions
+    
+    # Overwrite getState function in parent class
+    #discretize trajectory: use two additional rings of states for entry and exit states
+    #cluster volume should be on the same order of magnitute as for the internal states
+    
+    cpdef getSpherePartition(self, np.ndarray[np.int32_t, ndim=1] regionsPerCollar, \
+                                   np.ndarray[np.float64_t, ndim=1] phiCuts, \
+                                   list thetaCuts):
+        self.regionsPerCollar = regionsPerCollar
+        self.phiCuts = phiCuts
+        self.thetaCuts = thetaCuts
+        self.numPartitions = np.sum(self.regionsPerCollar)
+    
+    cpdef getStatePy(self,np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
+        return self.getState(coord, prevst)
+        
+    
+    cdef np.int32_t getState(self, np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
+        cdef np.float64_t radius = np.linalg.norm(coord)
+        cdef np.ndarray[np.float64_t, ndim=2] cen2coord
+        cdef np.ndarray[np.float64_t, ndim=1] norm
+        cdef np.int32_t index, collarNumber
+        # inner MSM
+        if radius < self.innerMSMrad:
+            for index in range(self.Ncenters):
+                if (self.centers[index][0] - coord[0])**2 + \
+                   (self.centers[index][1] - coord[1])**2 + (self.centers[index][2] - coord[2])**2< 0.04:
+                    return index
+            return prevst
+        # outer part
+        else:
+            collarNumber = self.getCollarNumber(coord)
+            angularState = self.getAngularState(coord, collarNumber)
+            return self.Ncenters + angularState
+    
+    cdef np.int32_t getAngularState(self, np.ndarray[double, ndim=1] coord, int collarNumber):
+        cdef double theta = atan2(coord[1], coord[0]) + PI
+        cdef np.int32_t angularState 
+        #Return state 1 if at poles (only one state in each pole)
+        if collarNumber == 0:
+            return 0
+        if collarNumber == len(self.regionsPerCollar) - 1:
+            return self.numPartitions - 1
+        else:
+            angularState = np.where(self.thetaCuts[collarNumber-1]<=theta)[0][-1] 
+            angularState += np.sum(self.regionsPerCollar[:collarNumber])
+            return angularState 
+        
+    cdef np.int32_t getCollarNumber(self, np.ndarray[double, ndim=1] coord):
+        cdef double rr = sqrt(coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2])
+        cdef double phi = acos(coord[2]/rr)
+        cdef int collarNumber = np.where(self.phiCuts<=phi)[0][-1]
+        return collarNumber

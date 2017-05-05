@@ -2,7 +2,9 @@ import numpy as np
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
 # Calculate equal area partition of unit sphere with "num_partitions" partitions
+
 def partitionSphere(num_partitions):
 
     # Functions to obtain angle from cap area and viceversa
@@ -59,27 +61,44 @@ def partitionSphere(num_partitions):
         # phi angles of collars and theta angles for each collar
     return regionsPerCollar.astype(np.int32), phis, thetas
 
-    # Plot spherical partition in 3D
-def plotPartitionedSphere(numRegionsCollar = None, phis = None, thetas = None, save = None):
+
+# Plots partioned sphere function, if no spherePartition given, calculates a default one with 
+# 20 partitions, save: set to True saves the output figure to file,
+# plotState: choose a state between 1 and numPartitions to plot the correposnding area to that state.
+# (when plotState is set, no inner sphere is plotted, and full lines are shown)
+
+def plotPartitionedSphere(numRegionsCollar = None, phis = None, thetas = None, \
+                          save = None, plotState = None):
     if numRegionsCollar == None:
-        numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
+        numRegionsCollar, phis, thetas = partitionSphere(20)
     if save == None:
         save = False
+    numPartitions = sum(numRegionsCollar)
+    if plotState != None:
+        if plotState > numPartitions:
+            print "Special region out of range"
+    # Create plot figure
     fig = plt.figure(figsize=plt.figaspect(0.95)*1.5)
     ax = fig.gca(projection='3d')
     ax._axis3don = False
-    r=1
-    # For porper viewing with mplot3d
-    minth = 0 
-    maxth = np.pi
+    # Adjust for porper viewing with mplot3d 
+    #(lines behind sphere not plotted)
+    if plotState == None:
+        minth = 0 
+        maxth = np.pi
+    else:
+        minth = 0 
+        maxth = 2*np.pi
 
     # Plot inner white sphere
-    u = np.linspace(0, 2 * np.pi, 400)
-    v = np.linspace(0, np.pi, 400)
-    xx = r * np.outer(np.cos(u), np.sin(v))
-    yy = r * np.outer(np.sin(u), np.sin(v))
-    zz = r * np.outer(np.ones(np.size(u)), np.cos(v))
-    ax.plot_surface(xx, yy, zz, color='white', linewidth=0, antialiased=False, alpha = 1.0)
+    r=1
+    if plotState == None:
+        u = np.linspace(0, 2 * np.pi, 400)
+        v = np.linspace(0, np.pi, 400)
+        xx = r * np.outer(np.cos(u), np.sin(v))
+        yy = r * np.outer(np.sin(u), np.sin(v))
+        zz = r * np.outer(np.ones(np.size(u)), np.cos(v))
+        ax.plot_surface(xx, yy, zz, color='white', linewidth=0, antialiased=False, alpha = 1.0)
 
     # Plot collars
     for phi in phis:
@@ -101,7 +120,61 @@ def plotPartitionedSphere(numRegionsCollar = None, phis = None, thetas = None, s
                     y = r * np.cos(theta) * np.sin(phi)
                     z = r * np.cos(phi)
                     ax.plot(x, y, z, '-k')
-
+    
+    # Find location of state in plotState (counts from one onwards)
+    # First find collar (phis)
+    collar = 0
+    while (sum(numRegionsCollar[0:collar+1])) < plotState: 
+        collar += 1
+    phi1 = phis[collar]
+    if collar+1 < len(numRegionsCollar):
+        phi2 = phis[collar+1]
+    else:
+        phi2 = np.pi
+    # Find thetas
+    prevStates = sum(numRegionsCollar[0:collar])
+    if ((prevStates == 0) or (prevStates == numPartitions -1)):
+        theta1 = 0
+        theta2 = 2*np.pi
+    else:
+        thetasCollar = thetas[collar-1]
+        statesInCollar = plotState - prevStates
+        theta1 = thetasCollar[statesInCollar-1]
+        if statesInCollar == len(thetasCollar):
+            theta2 = 2*np.pi
+        else:
+            theta2 = thetasCollar[statesInCollar]
+    # Plot special state
+    if min(phi1,phi2) == 0 or max(phi1,phi2) == np.pi:
+        thetas = np.linspace(theta1,theta2, 50)
+        if phi1 == 0:
+            phis = phi2
+        else:
+            phis = phi1
+        xx = r * np.sin(thetas) * np.sin(phis)
+        yy = r * np.cos(thetas) * np.sin(phis)
+        zz = r * np.cos(phis)
+        ax.plot(xx, yy, zz, '-r', lw=3)
+    else:   
+        thetas = np.linspace(theta1,theta2, 50)
+        phis = np.linspace(phi1,phi2, 50)
+        x1 = r * np.sin(thetas) * np.sin(phi1)
+        y1 = r * np.cos(thetas) * np.sin(phi1)
+        z1 = r * np.cos(phi1) 
+        x2 = r * np.sin(thetas) * np.sin(phi2)
+        y2 = r * np.cos(thetas) * np.sin(phi2)
+        z2 = r * np.cos(phi2)
+        x3 = r * np.sin(theta1) * np.sin(phis)
+        y3 = r * np.cos(theta1) * np.sin(phis)
+        z3 = r * np.cos(phis) 
+        x4 = r * np.sin(theta2) * np.sin(phis)
+        y4 = r * np.cos(theta2) * np.sin(phis)
+        z4 = r * np.cos(phis)
+        ax.plot(x1, y1, z1, '-r', lw=3)
+        ax.plot(x2, y2, z2, '-r', lw=3)
+        ax.plot(x3, y3, z3, '-r', lw=3)
+        ax.plot(x4, y4, z4, '-r', lw=3)
+                         
     # Plot the surface
     #ax.set_aspect('equal')
     ax.view_init(0, 0)

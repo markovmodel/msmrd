@@ -105,8 +105,8 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
     # Plot collars
     for phi in phis:
         theta = np.linspace(minth,maxth, 50)
-        x = r * np.sin(theta) * np.sin(phi)
-        y = r * np.cos(theta) * np.sin(phi)
+        x = r * np.cos(theta) * np.sin(phi)
+        y = r * np.sin(theta) * np.sin(phi)
         z = r * np.cos(phi) 
         ax.plot(x, y, z, '-k')
     # Plot divisions in every collar
@@ -118,8 +118,8 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
             for j in range(numDiv):
                 theta = j*dth
                 if (theta >= minth) and (theta <= maxth):
-                    x = r * np.sin(theta) * np.sin(phi)
-                    y = r * np.cos(theta) * np.sin(phi)
+                    x = r * np.cos(theta) * np.sin(phi)
+                    y = r * np.sin(theta) * np.sin(phi)
                     z = r * np.cos(phi)
                     ax.plot(x, y, z, '-k')
     
@@ -153,24 +153,24 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
             phis = phi2
         else:
             phis = phi1
-        xx = r * np.sin(thetas) * np.sin(phis)
-        yy = r * np.cos(thetas) * np.sin(phis)
+        xx = r * np.cos(thetas) * np.sin(phis)
+        yy = r * np.sin(thetas) * np.sin(phis)
         zz = r * np.cos(phis)
         ax.plot(xx, yy, zz, '-r', lw=3)
     else:   
         thetas = np.linspace(theta1,theta2, 50)
         phis = np.linspace(phi1,phi2, 50)
-        x1 = r * np.sin(thetas) * np.sin(phi1)
-        y1 = r * np.cos(thetas) * np.sin(phi1)
+        x1 = r * np.cos(thetas) * np.sin(phi1)
+        y1 = r * np.sin(thetas) * np.sin(phi1)
         z1 = r * np.cos(phi1) 
-        x2 = r * np.sin(thetas) * np.sin(phi2)
-        y2 = r * np.cos(thetas) * np.sin(phi2)
+        x2 = r * np.cos(thetas) * np.sin(phi2)
+        y2 = r * np.sin(thetas) * np.sin(phi2)
         z2 = r * np.cos(phi2)
-        x3 = r * np.sin(theta1) * np.sin(phis)
-        y3 = r * np.cos(theta1) * np.sin(phis)
+        x3 = r * np.cos(theta1) * np.sin(phis)
+        y3 = r * np.sin(theta1) * np.sin(phis)
         z3 = r * np.cos(phis) 
-        x4 = r * np.sin(theta2) * np.sin(phis)
-        y4 = r * np.cos(theta2) * np.sin(phis)
+        x4 = r * np.cos(theta2) * np.sin(phis)
+        y4 = r * np.sin(theta2) * np.sin(phis)
         z4 = r * np.cos(phis)
         ax.plot(x1, y1, z1, '-r', lw=3)
         ax.plot(x2, y2, z2, '-r', lw=3)
@@ -187,7 +187,7 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
                          
     # Plot the surface
     #ax.set_aspect('equal')
-    ax.view_init(0, 0)
+    ax.view_init(0,270)
     ax.dist = 5.65
     if save:
         plt.savefig('spherePartion_' + str(numPartitions) + '.png')

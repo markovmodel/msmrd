@@ -75,8 +75,9 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
     if save == None:
         save = False
     if plotState != None:
-        if plotState > numPartitions:
+        if plotState > numPartitions or plotState <= 0:
             print "State to plot out of range"
+            return
     numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
     # Create plot figure
     fig = plt.figure(figsize=plt.figaspect(0.95)*1.5)

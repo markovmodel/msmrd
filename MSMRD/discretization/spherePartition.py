@@ -62,21 +62,20 @@ def partitionSphere(num_partitions):
     return regionsPerCollar.astype(np.int32), phis, thetas
 
 
-# Plots partioned sphere function, if no spherePartition given, calculates a default one with 
-# 20 partitions, save: set to True saves the output figure to file,
+# Plots partioned sphere function for a given numPartitions, (requires spherePartition function), 
+# if no numPartions is given, it defaults to 20 partitions, save: set to True saves the output figure to file,
 # plotState: choose a state between 1 and numPartitions to plot the correposnding area to that state.
 # (when plotState is set, no inner sphere is plotted, and full lines are shown)
 
-def plotPartitionedSphere(numRegionsCollar = None, phis = None, thetas = None, \
-                          save = None, plotState = None):
-    if numRegionsCollar == None:
-        numRegionsCollar, phis, thetas = partitionSphere(20)
+def plotPartitionedSphere(numPartitions = None, save = None, plotState = None):
+    if numPartitions == None:
+        numPartitions == 20
     if save == None:
         save = False
-    numPartitions = sum(numRegionsCollar)
     if plotState != None:
         if plotState > numPartitions:
-            print "Special region out of range"
+            print "State to plot out of range"
+    numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
     # Create plot figure
     fig = plt.figure(figsize=plt.figaspect(0.95)*1.5)
     ax = fig.gca(projection='3d')

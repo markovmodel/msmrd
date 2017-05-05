@@ -279,9 +279,7 @@ cdef class trajDiscretization3DCython:
         self.Ncenters = len(self.centers)
         self.Nstates = self.Ncenters + self.numPartitions
     
-    # Overwrite getState function in parent class
-    #discretize trajectory: use two additional rings of states for entry and exit states
-    #cluster volume should be on the same order of magnitute as for the internal states
+    # Load sphere partition into the class, required for getState
     
     cpdef getSpherePartition(self, np.ndarray[np.int32_t, ndim=1] regionsPerCollar, \
                                    np.ndarray[np.float64_t, ndim=1] phiCuts, \
@@ -291,9 +289,12 @@ cdef class trajDiscretization3DCython:
         self.thetaCuts = thetaCuts
         self.numPartitions = np.sum(self.regionsPerCollar)
     
+    # Auxilary function for testing getState from python
+    
     cpdef getStatePy(self,np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
-        return self.getState(coord, prevst)
-        
+        return self.getState(coord, prevst)      
+    
+    # Get discrete state in the 3d case (minimas or outside according to the sphere partition) 
     
     cdef np.int32_t getState(self, np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
         cdef np.float64_t radius = np.linalg.norm(coord)
@@ -303,8 +304,8 @@ cdef class trajDiscretization3DCython:
         # inner MSM
         if radius < self.innerMSMrad:
             for index in range(self.Ncenters):
-                if (self.centers[index][0] - coord[0])**2 + \
-                   (self.centers[index][1] - coord[1])**2 + (self.centers[index][2] - coord[2])**2< 0.04:
+                if (self.centers[index][0] - coord[0])**2 + (self.centers[index][1] - coord[1])**2 + \
+                    (self.centers[index][2] - coord[2])**2 < 0.04:
                     return index
             return prevst
         # outer part
@@ -312,6 +313,8 @@ cdef class trajDiscretization3DCython:
             collarNumber = self.getCollarNumber(coord)
             angularState = self.getAngularState(coord, collarNumber)
             return self.Ncenters + angularState
+    
+    # Get angular state in the sphere for a given coord in its corresponding collar
     
     cdef np.int32_t getAngularState(self, np.ndarray[double, ndim=1] coord, int collarNumber):
         cdef double theta = atan2(coord[1], coord[0]) + PI
@@ -325,9 +328,42 @@ cdef class trajDiscretization3DCython:
             angularState = np.where(self.thetaCuts[collarNumber-1]<=theta)[0][-1] 
             angularState += np.sum(self.regionsPerCollar[:collarNumber])
             return angularState 
-        
+    
+    # Get in which collar the coordinates coord are found
+    
     cdef np.int32_t getCollarNumber(self, np.ndarray[double, ndim=1] coord):
         cdef double rr = sqrt(coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2])
         cdef double phi = acos(coord[2]/rr)
         cdef int collarNumber = np.where(self.phiCuts<=phi)[0][-1]
         return collarNumber
+    
+    # Compute the discrete trajectory from a trajectory
+    # given as np array
+    
+    cpdef getdTraj(self, np.ndarray[np.float64_t, ndim=2] traj):
+        cdef np.int32_t k, checker, i 
+        cdef np.ndarray[np.int32_t, ndim=1] dTraj
+        # Skip first elements, that might have udefined behavior.
+        k = 0
+        checker = self.getState(traj[0], -1)
+        while checker < 0 and k < len(traj)-1:
+            k += 1
+            checker = self.getState(traj[k], -1)
+        dTraj = np.empty(len(traj)-k, dtype=np.int32)
+        dTraj[0] = checker
+        # Get state for the remainder of the trajectory
+        for i in range(1, len(traj)-k):
+            dTraj[i] = self.getState(traj[i+k], dTraj[i-1])
+        return dTraj
+    
+    # Compute a list of discrete trajectories from a list of continuous trajectories
+    # This function calls the getdTraj for each element in the list
+    
+    cpdef getdTrajs(self, list trajs):
+        cdef np.ndarray[np.float64_t, ndim=2] traj
+        cdef np.ndarray[np.int32_t, ndim=1] dTraj, validIndices
+        cdef list dTrajs = []
+        cdef int k, checker,i 
+        for traj in trajs:
+            dTrajs.append(self.getdTraj(traj))
+        return dTrajs

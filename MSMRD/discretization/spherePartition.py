@@ -66,8 +66,10 @@ def partitionSphere(num_partitions):
 # if no numPartions is given, it defaults to 20 partitions, save: set to True saves the output figure to file,
 # plotState: choose a state between 1 and numPartitions to plot the correposnding area to that state.
 # (when plotState is set, no inner sphere is plotted, and full lines are shown)
+# coord takes a list of three numbers (xyz) and plot the instersection between the unit sphere and the ray from
+# the origin to coord; it should be used to test if the correct states are returned
 
-def plotPartitionedSphere(numPartitions = None, save = None, plotState = None):
+def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, coord = None):
     if numPartitions == None:
         numPartitions == 20
     if save == None:
@@ -173,6 +175,14 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None):
         ax.plot(x2, y2, z2, '-r', lw=3)
         ax.plot(x3, y3, z3, '-r', lw=3)
         ax.plot(x4, y4, z4, '-r', lw=3)
+    
+    # plot point of coord
+    if coord != None:
+        coordnorm = np.linalg.norm(coord)
+        xc = coord[0]/coordnorm
+        yc = coord[1]/coordnorm
+        zc = coord[2]/coordnorm
+        ax.plot([xc],[yc],[zc],'or')
                          
     # Plot the surface
     #ax.set_aspect('equal')

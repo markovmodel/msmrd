@@ -1,6 +1,9 @@
-import numpy as np 
+import numpy as np
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 # Calculate equal area partition of unit sphere with "num_partitions" partitions
-def partition_sphere(num_partitions):
+def partitionSphere(num_partitions):
 
     # Functions to obtain angle from cap area and viceversa
     def angle_to_cap_area(phi):
@@ -55,3 +58,53 @@ def partition_sphere(num_partitions):
         # return number of regions for all collars, 
         # phi angles of collars and theta angles for each collar
     return regionsPerCollar.astype(np.int32), phis, thetas
+
+    # Plot spherical partition in 3D
+def plotPartitionedSphere(numRegionsCollar = None, phis = None, thetas = None, save = None):
+    if numRegionsCollar == None:
+        numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
+    if save == None:
+        save = False
+    fig = plt.figure(figsize=plt.figaspect(0.95)*1.5)
+    ax = fig.gca(projection='3d')
+    ax._axis3don = False
+    r=1
+    # For porper viewing with mplot3d
+    minth = 0 
+    maxth = np.pi
+
+    # Plot inner white sphere
+    u = np.linspace(0, 2 * np.pi, 400)
+    v = np.linspace(0, np.pi, 400)
+    xx = r * np.outer(np.cos(u), np.sin(v))
+    yy = r * np.outer(np.sin(u), np.sin(v))
+    zz = r * np.outer(np.ones(np.size(u)), np.cos(v))
+    ax.plot_surface(xx, yy, zz, color='white', linewidth=0, antialiased=False, alpha = 1.0)
+
+    # Plot collars
+    for phi in phis:
+        theta = np.linspace(minth,maxth, 50)
+        x = r * np.sin(theta) * np.sin(phi)
+        y = r * np.cos(theta) * np.sin(phi)
+        z = r * np.cos(phi) 
+        ax.plot(x, y, z, '-k')
+    # Plot divisions in every collar
+    for i in range(len(numRegionsCollar)):
+        numDiv = int(numRegionsCollar[i])
+        if numDiv > 1:
+            dth = 2 * np.pi /numDiv
+            phi = np.linspace(phis[i],phis[i+1],10)
+            for j in range(numDiv):
+                theta = j*dth
+                if (theta >= minth) and (theta <= maxth):
+                    x = r * np.sin(theta) * np.sin(phi)
+                    y = r * np.cos(theta) * np.sin(phi)
+                    z = r * np.cos(phi)
+                    ax.plot(x, y, z, '-k')
+
+    # Plot the surface
+    #ax.set_aspect('equal')
+    ax.view_init(0, 0)
+    ax.dist = 5.65
+    if save:
+        plt.savefig('spherePartion_' + str(numPartitions) + '.png')

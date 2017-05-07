@@ -67,24 +67,27 @@ class simulation:
 
     def run_mfpt(self, threshold):
         i = 0
+        self.integrator.clock = 0.
         while self.integrator.above_threshold(threshold):
             self.integrator.integrate()
             i+=1
-        return i*self.integrator.timestep
+        return self.integrator.clock 
 
     def run_mfpt_point(self, point, radius):
         i = 0
+        self.integrator.clock = 0.
         while self.integrator.outside_radius(point, radius):
             self.integrator.integrate()
             i+=1
-        return i*self.integrator.timestep
+        return self.integrator.clock 
 
     def run_mfpt_state(self, state):
         i=0
+        self.integrator.clock = 0.
         while self.integrator.MSM.state != state:
             self.integrator.integrate()
             i += 1
-        return i*self.integrator.timestep
+        return self.integrator.clock
 
 
 """

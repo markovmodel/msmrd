@@ -85,7 +85,7 @@ cdef class trajDiscretizationCython:
     # Truncate trajectories at the radius give by self.innerMSMrad
     # The first and last data points outside of the ring will be added to the trajectory 
     
-    cpdef getTruncatedTraj(self, np.ndarray[double, ndim=2] traj):
+    cpdef getTruncatedTraj(self, np.ndarray[double, ndim=2] traj, bint prepend=False):
         cdef list currentTraj
         cdef list innerTrajs = []
         cdef bint trajActive = False
@@ -103,7 +103,10 @@ cdef class trajDiscretizationCython:
                     #Start a new truncated trajectory. Maybe add previous state!
                     trajActive = True
                     if i > 0:
-                        currentTraj = [traj[i]] #[traj[i-1], traj[i]]
+                        if prepend:
+                            currentTraj =  [traj[i-1], traj[i]]
+                        else:
+                            currentTraj = [traj[i]]
                     else:
                         currentTraj = [traj[i]]
             else:
@@ -199,8 +202,11 @@ cdef class trajDiscretizationCython:
             exitPositions.append(exitFromi)
             exitTimes.append(timeFromi)
         for i in range(len(dTruncTrajs)):
+            if dTruncTrajs[i][0] < self.Ncenters:
+                #skip trajectories which start inside. this shouldnt be too many
+                continue
             if np.any(dTruncTrajs[i] < self.Ncenters):
-                if dTruncTrajs[i][-1] > self.Ncenters and len(dTruncTrajs[i]) > 2:
+                if dTruncTrajs[i][-1] >= self.Ncenters and len(dTruncTrajs[i]) > 2:
                     lastState = dTruncTrajs[i][-2]
                     exitPositions[lastState].append(truncTrajs[i][-1])
                     exitTime = 0

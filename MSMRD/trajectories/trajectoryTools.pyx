@@ -279,7 +279,8 @@ cdef class trajDiscretization3DCython:
         self.Ncenters = len(self.centers)
         self.Nstates = self.Ncenters + self.numPartitions
     
-    # Load sphere partition into the class, required for getState
+    
+    # Load sphere partition into class
     
     cpdef getSpherePartition(self, np.ndarray[np.int32_t, ndim=1] regionsPerCollar, \
                                    np.ndarray[np.float64_t, ndim=1] phiCuts, \
@@ -289,12 +290,11 @@ cdef class trajDiscretization3DCython:
         self.thetaCuts = thetaCuts
         self.numPartitions = np.sum(self.regionsPerCollar)
     
-    # Auxilary function for testing getState from python
+    
+    # Get discrete state in the 3d case (minimas or outside according to the sphere partition) 
     
     cpdef getStatePy(self,np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
         return self.getState(coord, prevst)      
-    
-    # Get discrete state in the 3d case (minimas or outside according to the sphere partition) 
     
     cdef np.int32_t getState(self, np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
         cdef np.float64_t radius = np.linalg.norm(coord)
@@ -317,9 +317,12 @@ cdef class trajDiscretization3DCython:
     # Get angular state in the sphere for a given coord in its corresponding collar
     
     cdef np.int32_t getAngularState(self, np.ndarray[double, ndim=1] coord, int collarNumber):
-        cdef double theta = atan2(coord[1], coord[0]) + PI
-        cdef np.int32_t angularState 
-        #Return state 1 if at poles (only one state in each pole)
+        cdef double theta = atan2(coord[1], coord[0]) #+ PI
+        cdef np.int32_t angularState
+        # Readjust negative value of atan (without summing PI to keep zero in same position)
+        if theta < 0:
+            theta += 2*np.pi
+        #Return state 0 or numPartitions-1 if at poles (only one state in each pole)
         if collarNumber == 0:
             return 0
         if collarNumber == len(self.regionsPerCollar) - 1:

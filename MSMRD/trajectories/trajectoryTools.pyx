@@ -306,7 +306,7 @@ cdef class trajDiscretization3DCython:
         cdef np.float64_t radius = np.linalg.norm(coord)
         cdef np.ndarray[np.float64_t, ndim=2] cen2coord
         cdef np.ndarray[np.float64_t, ndim=1] norm
-        cdef np.int32_t index, collarNumber
+        cdef np.int32_t index, collarNumber, angularState
         # inner MSM
         if radius < self.innerMSMrad:
             for index in range(self.Ncenters):
@@ -478,3 +478,84 @@ cdef class trajDiscretization3DCython:
                         state = dTruncTrajs[i][(-2-exitTime)]
                     exitTimes[lastState].append(exitTime)
         return exitPositions, exitTimes 
+        
+        
+        
+        
+## TEST Cython inheritance, don't know yet how to override functions of
+## parent class correctly    
+        
+#cdef class trajDiscretization3DCythonTest(trajDiscretizationCython):
+    #cdef public double boxSize
+    #cdef public int numPartitions
+    #cdef public object regionsPerCollar, phiCuts
+    #cdef public list thetaCuts
+    #def __cinit__(self, np.ndarray[double, ndim=2] centers, double boxSize):
+        #super(trajDiscretization3DCythonTest, self).__init__(centers, boxSize)
+        #self.centers = centers
+        #self.boxSize = boxSize
+        #self.innerMSMrad = 0.5*self.boxSize 
+        #self.numPartitions = 0
+        #self.Ncenters = len(self.centers)
+        #self.Nstates = self.Ncenters + self.numPartitions
+   
+    
+    ## Load sphere partition into class
+    
+    #cpdef getSpherePartition(self, np.ndarray[np.int32_t, ndim=1] regionsPerCollar, \
+                                   #np.ndarray[np.float64_t, ndim=1] phiCuts, \
+                                   #list thetaCuts):
+        #self.regionsPerCollar = regionsPerCollar
+        #self.phiCuts = phiCuts
+        #self.thetaCuts = thetaCuts
+        #self.numPartitions = np.sum(self.regionsPerCollar)
+    
+    
+    ## Get discrete state in the 3d case (minimas or outside according to the sphere partition) 
+    
+    #cpdef getStatePy(self,np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
+        #return self.getState(coord, prevst)      
+    
+    #cdef np.int32_t getState(self, np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
+        #cdef np.float64_t radius = np.linalg.norm(coord)
+        #cdef np.ndarray[np.float64_t, ndim=2] cen2coord
+        #cdef np.ndarray[np.float64_t, ndim=1] norm
+        #cdef np.int32_t index, collarNumber, angularState =1
+        ## inner MSM
+        #if radius < self.innerMSMrad:
+            #for index in range(self.Ncenters):
+                #if (self.centers[index][0] - coord[0])**2 + (self.centers[index][1] - coord[1])**2 + \
+                    #(self.centers[index][2] - coord[2])**2 < 0.04:
+                    #return index
+            #return prevst
+        ## outer part
+        #else:
+            #collarNumber = self.getCollarNumber(coord)
+            #angularState = self.getAngularState(coord, collarNumber)
+            #return self.Ncenters + angularState
+    
+    ## Get angular state in the sphere for a given coord in its corresponding collar
+    
+    #cdef np.int32_t getAngularState(self, np.ndarray[double, ndim=1] coord, np.int32_t collarNumber):
+        #cdef double theta = atan2(coord[1], coord[0]) #+ PI
+        #cdef np.int32_t angularState
+        ## Readjust negative value of atan (without summing PI to keep zero in same position)
+        #if theta < 0:
+            #theta += 2*np.pi
+        ##Return state 0 or numPartitions-1 if at poles (only one state in each pole)
+        #if collarNumber == 0:
+            #return 0
+        #if collarNumber == len(self.regionsPerCollar) - 1:
+            #return self.numPartitions - 1
+        #else:
+            #angularState = np.where(self.thetaCuts[collarNumber-1]<=theta)[0][-1] 
+            #angularState += np.sum(self.regionsPerCollar[:collarNumber])
+            #return angularState 
+    
+    ## Get in which collar the coordinates coord are found
+    
+    #cdef np.int32_t getCollarNumber(self, np.ndarray[double, ndim=1] coord):
+        #cdef double rr = sqrt(coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2])
+        #cdef double phi = acos(coord[2]/rr)
+        #cdef int collarNumber = np.where(self.phiCuts<=phi)[0][-1]
+        #return collarNumber

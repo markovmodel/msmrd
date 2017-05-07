@@ -376,3 +376,105 @@ cdef class trajDiscretization3DCython:
         for traj in trajs:
             dTrajs.append(self.getdTraj(traj))
         return dTrajs
+        
+    # Truncate trajectories at the radius give by self.innerMSMrad
+    # The first and last data points outside of the ring will be added to the trajectory 
+    
+    cpdef getTruncatedTraj(self, np.ndarray[double, ndim=2] traj, bint prepend=False):
+        cdef list currentTraj
+        cdef list innerTrajs = []
+        cdef bint trajActive = False
+        cdef bint innerTrajActive = False
+        cdef np.ndarray[double, ndim=1] norm
+        cdef int length
+        norm = np.linalg.norm(traj, axis = 1)
+        trajActive = False
+        innerTrajActive = False
+        length = len(traj)
+        #Loop over trajectory
+        for i in range(0, length):
+            if not trajActive:
+                if norm[i]<self.innerMSMrad:
+                    #Start a new truncated trajectory. Maybe add previous state!
+                    trajActive = True
+                    if i > 0:
+                        if prepend:
+                            currentTraj =  [traj[i-1], traj[i]]
+                        else:
+                            currentTraj = [traj[i]]
+                    else:
+                        currentTraj = [traj[i]]
+            else:
+                # There is already and active trajectory!
+                if norm[i] > self.innerMSMrad:
+                    # Trajectory exits domain. Finish it by appending the last data point
+                    # and adding it to the list of trajectories
+                    trajActive = False
+                    currentTraj.append(traj[i]) 
+                    innerTrajs.append(np.array(currentTraj)) 
+                else:
+                    # Data point is inside domain. Add it to the active trajectory
+                    currentTraj.append(traj[i])
+        return innerTrajs
+        
+    
+    cpdef getTruncatedTrajs(self, list trajs):
+        cdef list innerTrajs = []
+        for traj in trajs:
+            innerTrajs = innerTrajs + self.getTruncatedTraj(traj)
+        return innerTrajs
+        
+    # This function generates a lookup table for trajectories which are entering the domain from the bath.
+    # It returns the starting coordinates, first state the respective trajectory hits as well as its length
+    
+    cpdef getLookupTableEntry(self, list dTrajs, list truncTrajs):
+        cdef np.ndarray[long, ndim=1] dTraj
+        cdef np.ndarray[double, ndim=1] entryCoord
+        cdef int j, i, currentState, entryState
+        cdef list entryCoords = []
+        cdef list firstStates = []
+        cdef list times = []
+        for i in range(len(truncTrajs)):
+            if np.any(dTrajs[i] < 0):
+                continue
+            if np.linalg.norm(truncTrajs[i][0]) < self.innerMSMrad:
+                continue
+            entryCoords.append(truncTrajs[i][1])
+            entryState = dTrajs[i][0]
+            j = 0
+            currentState = entryState
+            while currentState == entryState and j < len(dTrajs[i])-2:
+                j += 1
+                currentState = dTrajs[i][j]
+            times.append(j)
+            if currentState >= self.Ncenters:
+                firstStates.append(truncTrajs[i][-1])
+            else:
+                firstStates.append(currentState)
+        return np.array(entryCoords), firstStates, np.array(times)
+    
+    cpdef getLookupTableExit(self, list dTruncTrajs, list truncTrajs):
+        cdef int exitFrom, k, state, lastState
+        cdef np.ndarray[double, ndim=1] exitPosition
+        cdef list exitPositions = []
+        cdef list exitTimes = []
+        for i in range(self.Nstates):
+            exitFromi = []
+            timeFromi = []
+            exitPositions.append(exitFromi)
+            exitTimes.append(timeFromi)
+        for i in range(len(dTruncTrajs)):
+            if dTruncTrajs[i][0] < self.Ncenters:
+                #skip trajectories which start inside. this shouldnt be too many
+                continue
+            if np.any(dTruncTrajs[i] < self.Ncenters):
+                if dTruncTrajs[i][-1] >= self.Ncenters and len(dTruncTrajs[i]) > 2:
+                    lastState = dTruncTrajs[i][-2]
+                    exitPositions[lastState].append(truncTrajs[i][-1])
+                    exitTime = 0
+                    state = lastState
+                    while state == lastState:
+                        exitTime += 1
+                        state = dTruncTrajs[i][(-2-exitTime)]
+                    exitTimes[lastState].append(exitTime)
+        return exitPositions, exitTimes 

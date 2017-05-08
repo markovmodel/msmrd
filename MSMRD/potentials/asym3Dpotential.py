@@ -48,7 +48,7 @@ class asym3Dpotential(object):
             outx = outx - gradx
             outy = outy - grady
             outz = outz - gradz
-        return -np.array([outx,outy,outz])
+        return -self.scalefactor*np.array([outx,outy,outz])
 
     # Calculate norm of gradient of the potential
     def gradnorm(self,r):

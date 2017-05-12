@@ -424,6 +424,39 @@ cdef class trajDiscretization3DCython:
             innerTrajs = innerTrajs + self.getTruncatedTraj(traj)
         return innerTrajs
         
+    # This function truncates the trajectories in the passed list when they enter a new state
+    # It returns a nested list of the format transitionTrajs[from state i][to state j][trajectory index]
+    
+    cpdef getTransitionTrajs(self, list dTruncTrajs):
+        cdef np.ndarray[np.int32_t, ndim=1] dTruncTraj
+        cdef list transitionTrajs = []
+        cdef list fromi = []
+        cdef list toj = []
+        #created nested list to store transition trajectories
+        for k in range(self.Ncenters+1):
+            fromi = []
+            for l in range(self.Ncenters+1):
+                toj = []
+                fromi.append(toj)
+            transitionTrajs.append(fromi)
+        cdef int i, initialState
+        for dTruncTraj in dTruncTrajs:
+            if np.any(dTruncTraj< 0):
+                #invalid trajectories are skipped
+                continue
+            initialState = dTruncTraj[0]
+            initialIndex = 0
+            #loop over trajectory
+            for i in range(1, len(dTruncTraj)):
+                #this indicates a transition. Trajectory leading to this transition is extracted and added to list.
+                if dTruncTraj[i] != initialState:
+                    finalState = min(dTruncTraj[i], self.Ncenters)
+                    initialState = min(initialState, self.Ncenters)
+                    transitionTrajs[initialState][finalState].append(initialState * np.ones(i-initialIndex, dtype=int))
+                    initialState = dTruncTraj[i]
+                    initialIndex = i
+        return transitionTrajs
+        
     # This function generates a lookup table for trajectories which are entering the domain from the bath.
     # It returns the starting coordinates, first state the respective trajectory hits as well as its length
     

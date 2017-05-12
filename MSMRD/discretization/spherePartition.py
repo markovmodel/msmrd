@@ -191,3 +191,64 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
     ax.dist = 5.65
     if save:
         plt.savefig('spherePartion_' + str(numPartitions) + '.png')
+        
+
+# Returns section number in spherical partition from 1 to numPartitions 
+# given some coordinates
+   
+def getSectionNumber(coords, numPartitions = None):
+    if numPartitions == None:
+        numPartitions == 20
+    numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
+    theta = np.arctan2(coords[1], coords[0])
+    if theta < 0:
+        theta += 2*np.pi
+    r = np.linalg.norm(coords)
+    phi = np.arccos(coords[2]/r)
+    currentCollarIndex = sum(phis<=phi) - 1
+    if currentCollarIndex == 0:
+        sectionNum = 1
+        return sectionNum
+    if currentCollarIndex == len(numRegionsCollar) - 1:
+        sectionNum = numPartions
+        return sectionNum
+    collarThetas = thetas[currentCollarIndex - 1]
+    currentThetaIndex = sum(collarTheta<=theta)
+    sectionNum = sum(numRegionsCollar[0:currentCollarIndex]) + currentThetaIndex
+    return sectionNum
+
+# Return angles [phi1, phi2] and [theta1, theta2] of a given section number
+# in the spherical partition
+
+def getAngles(secNumber, numPartitions = None):
+    if numPartitions == None:
+        numPartitions == 20
+    if secNumber > numPartitions:
+        print "Error: section number is larger than number of partitions"
+        return
+    numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
+    collar = 0
+    while (sum(numRegionsCollar[0:collar+1])) < secNumber: 
+        collar += 1
+    phi1 = phis[collar]
+    if collar+1 < len(numRegionsCollar):
+        phi2 = phis[collar+1]
+    else:
+        phi2 = np.pi
+    # Find thetas
+    prevStates = sum(numRegionsCollar[0:collar])
+    if ((prevStates == 0) or (prevStates == numPartitions -1)):
+        theta1 = 0
+        theta2 = 2*np.pi
+    else:
+        thetasCollar = thetas[collar-1]
+        statesInCollar = secNumber - prevStates
+        theta1 = thetasCollar[statesInCollar-1]
+        if statesInCollar == len(thetasCollar):
+            theta2 = 2*np.pi
+        else:
+            theta2 = thetasCollar[statesInCollar]
+    phiInterval = [phi1,phi2]
+    thetaInterval = [theta1, theta2]
+    return phiInterval, thetaInterval
+            

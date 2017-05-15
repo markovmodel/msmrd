@@ -12,15 +12,15 @@ def run_simulation(runNumber):
     scalef = 2.0
     sampInterval = 10
     asympot = potentials.asym3Dpotential(scalefactor = scalef)
-    x0 = 4.0*np.random.rand() - 2.0
-    y0 = 4.0*np.random.rand() - 2.0
-    z0 = 4.0*np.random.rand() - 2.0
+    x0 = 5.0*np.random.rand() - 2.5
+    y0 = 5.0*np.random.rand() - 2.5
+    z0 = 5.0*np.random.rand() - 2.5
     r1 = np.array([x0, y0, z0])
     p1 = mrd.particle(r1, 1.0)
     boundary = mrd.box(5.0,3) #mrd.reflectiveSphere(4.)
     integrator = integrators.brownianDynamicsSp(asympot, boundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
-    outfile = '../data/asym3D/3DasymTrajs_pbox5_RT1e7_'+ dt + 'dt' + sampInterval '_si_' + str(runNumber)+ '.h5'
+    outfile = '../data/asym3D/3DasymTrajs_pbox5_RT1e7_sf' + str(scalef) + '_dt' + str(dt) + '_si' + str(sampInterval) + '_run_' + str(runNumber)+ '.h5'
     sim.run_n_buffer(runtime, sample=True, samplingInterval=sampInterval, \
                      filename = outfile, buffersize = int(1e3))
 
@@ -28,7 +28,7 @@ def run_simulation(runNumber):
 
 processes = []
 print("Simulation started")
-for j in range(0, 15):
+for j in range(0, 50):
     for i in range(0, 4):
 	print("Process " + str(i+4*j) + " running")
         p = Process(target = run_simulation, args=(i+4*j,))

@@ -17,20 +17,20 @@ def run_mfpts(statePair, runs, scalef, dt):
         return 0.
     global MFPTS, minima
     np.random.seed()
-    asympot = potentials.asym3Dpotential(scalefactor = scalef)
+    asympot3D = potentials.asym3Dpotential(scalefactor = scalef)
     x0 = 2.0*np.random.rand() - 1.0
     y0 = 2.0*np.random.rand() - 1.0
     z0 = 2.0*np.random.rand() - 1.0
     r1 = np.array([x0, y0, z0])
     p1 = mrd.particle(r1, 1.0)
     ringboundary = mrd.reflectiveRing(4.)
-    integrator = integrators.brownianDynamicsSp(asympot, ringboundary, p1, dt, 1.0)
+    integrator = integrators.brownianDynamicsSp(asympot3D, ringboundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
         integrator.pa.position = np.array(minima[statePair[0]])
         fpts.append(sim.run_mfpt_point(np.array(minima[statePair[1]]), 0.2))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + dt + 'dt_' + scalef 'sf.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) 'sf.p', 'wa'))
     return np.mean(fpts)
 
 statePairs = []

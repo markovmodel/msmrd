@@ -4,7 +4,7 @@ from ipywidgets import interact, widgets
 
 
 
-# Construct asymmetric 2D potential from Gaussian, calculate gradients and plots.
+# Construct asymmetric 3D potential from Gaussian, calculate gradients and plots.
 class asym3Dpotential(object):
     def __init__(self, minima=None, sigmas=None, scalefactor=None):
         if minima == None:

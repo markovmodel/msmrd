@@ -39,11 +39,11 @@ class asym3Dpotential(object):
         for i in range(len(self.minima)):
             mx, my, mz = self.minima[i]
             sigx, sigy, sigz = self.sigmas[i]
-            gradx = -(2*(x-mx)/(2*sigx))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
+            gradx = -(2*(x-mx)/(2*sigx**2))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
             gradx = gradx/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
-            grady = -(2*(y-my)/(2*sigy))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
+            grady = -(2*(y-my)/(2*sigy**2))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
             grady = grady/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
-            gradz = -(2*(z-mz)/(2*sigz))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
+            gradz = -(2*(z-mz)/(2*sigz**2))*np.exp(-(x - mx)**2/(2*sigx**2) - (y - my)**2/(2*sigy**2) - (z - mz)**2/(2*sigz**2))
             gradz = gradz/(pow(2*np.pi,3.0/2.0)*sigx*sigy*sigz)
             outx = outx - gradx
             outy = outy - grady

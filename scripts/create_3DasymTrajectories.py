@@ -20,7 +20,7 @@ def run_simulation(runNumber):
     boundary = mrd.box(5.0,3) #mrd.reflectiveSphere(4.)
     integrator = integrators.brownianDynamicsSp(asympot, boundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
-    outfile = '../data/asym3D/3DasymTrajs_pbox5_RT1e7_sf' + str(scalef) +'_dt' + str(dt)+ '_si' + str(sampInterval) + '_run_' + str(runNumber)+ '.h5'
+    outfile = '../data/asym3D/3DasymTrajs_pbox5_RT1e7_sf' + str(scalef) + '_dt' + str(dt) + '_si' + str(sampInterval) + '_run_' + str(runNumber)+ '.h5'
     sim.run_n_buffer(runtime, sample=True, samplingInterval=sampInterval, \
                      filename = outfile, buffersize = int(1e3))
 

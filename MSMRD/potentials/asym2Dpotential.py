@@ -39,9 +39,9 @@ class asym2Dpotential(object):
             my = self.minima[i][1]
             sigx = self.sigmas[i][0]
             sigy = self.sigmas[i][1]
-            gradx = -(2*(x-mx)/(2*sigx))*np.exp(-(x - mx)**2/(2*sigx**2)-(y - my)**2/(2*sigy**2))
+            gradx = -(2*(x-mx)/(2*sigx**2))*np.exp(-(x - mx)**2/(2*sigx**2)-(y - my)**2/(2*sigy**2))
             gradx = gradx/(2*np.pi*sigx*sigy)
-            grady = -(2*(y-my)/(2*sigy))*np.exp(-(x - mx)**2/(2*sigx**2)-(y - my)**2/(2*sigy**2))
+            grady = -(2*(y-my)/(2*sigy**2))*np.exp(-(x - mx)**2/(2*sigx**2)-(y - my)**2/(2*sigy**2))
             grady = grady/(2*np.pi*sigx*sigy)
             outx = outx - gradx
             outy = outy - grady

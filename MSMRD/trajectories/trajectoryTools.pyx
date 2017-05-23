@@ -196,7 +196,7 @@ cdef class trajDiscretizationCython:
         cdef np.ndarray[double, ndim=1] exitPosition
         cdef list exitPositions = []
         cdef list exitTimes = []
-        for i in range(self.Nstates):
+        for i in range(self.Ncenters):
             exitFromi = []
             timeFromi = []
             exitPositions.append(exitFromi)

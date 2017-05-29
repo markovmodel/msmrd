@@ -30,7 +30,7 @@ def run_mfpts(statePair, runs, scalef, dt):
     for run in range(runs):
         integrator.pa.position = np.array(minima[statePair[0]])
         fpts.append(sim.run_mfpt_point(np.array(minima[statePair[1]]), 0.2))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) 'sf.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) + 'sf.p', 'wa'))
     return np.mean(fpts)
 
 statePairs = []

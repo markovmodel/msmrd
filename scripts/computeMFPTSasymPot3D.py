@@ -39,7 +39,7 @@ for i in range(9):
         statePairs.append((i,j))
 
 pool = Pool(processes=8)
-MFPT_list = pool.map(partial(run_mfpts, runs=10000, scalef=2, dt=0.01), statePairs)
+MFPT_list = pool.map(partial(run_mfpts, runs=10000, scalef=2, dt=0.001), statePairs)
 
 for i in range(9):
     for j in range(9):

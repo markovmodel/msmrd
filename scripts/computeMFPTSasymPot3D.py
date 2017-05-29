@@ -23,8 +23,8 @@ def run_mfpts(statePair, runs, scalef, dt):
     z0 = 2.0*np.random.rand() - 1.0
     r1 = np.array([x0, y0, z0])
     p1 = mrd.particle(r1, 1.0)
-    ringboundary = mrd.reflectiveRing(4.)
-    integrator = integrators.brownianDynamicsSp(asympot3D, ringboundary, p1, dt, 1.0)
+    sphereboundary = mrd.reflectiveSphere(4.)
+    integrator = integrators.brownianDynamicsSp(asympot3D, sphereboundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):

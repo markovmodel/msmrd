@@ -27,6 +27,8 @@ class MSMRDtruncTrajs(integrator):
         self.MSMactive = False
         self.lastState = -1
         self.transition = False
+        self.entryCalls = 0
+        self.exitCalls = 0
 
     def above_threshold(self, threshold):
         #assume that threshold is larger than the MSM radius
@@ -73,6 +75,7 @@ class MSMRDtruncTrajs(integrator):
         self.MSM.exit = False
 
     def enterMSM(self):
+        self.entryCalls += 1
         #assign closest state as entry state in MSM domain use Gaussian distance as metric
         #this might be really slow when having a ton of entry states
         # look up bin to search for entry position
@@ -81,7 +84,7 @@ class MSMRDtruncTrajs(integrator):
         # compute Gaussian weighted distance to determine closest entry position
         dist = np.linalg.norm(self.entryTrajsStart[angularBin] - self.p.position, axis=1)
         entryTraj = np.argmin(dist)
-"""
+        """
         weights = np.exp(-dist*dist/(2*self.sigma*self.sigma))
         weights /= np.sum(weights)
         # select entry trajectory
@@ -98,10 +101,11 @@ class MSMRDtruncTrajs(integrator):
             self.lastState = self.MSM.state
             self.transition = True
         # propagate clock
-        self.clock += self.entryTimes[angularBin][entryTraj]*self.timestep
+        self.clock += self.entryTimes[angularBin][entryTraj] * self.timestep
         self.MSM.exit = False
 
     def exitMSM(self):
+        self.exitCalls += 1
         exitTimeIndex = np.random.choice(len(self.exitTimes[self.MSM.state]))
         exitTime = self.exitTimes[self.MSM.state][exitTimeIndex] * self.timestep
         self.p.position = self.exitTrajs[self.MSM.state][exitTimeIndex]

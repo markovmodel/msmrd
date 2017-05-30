@@ -2,7 +2,6 @@ import numpy as np
 import MSMRD as mrd
 import MSMRD.integrators as integrators
 import MSMRD.potentials as potentials
-#from MSMRD.discretization import getSectionNumber, getAngles
 from multiprocessing import Process
 from multiprocessing import Pool
 from functools import partial
@@ -16,8 +15,8 @@ minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
           [-0.7,-1.0,-0.3], [0.0,-0.9,0.1],  [0.8,-0.2,0.8]]
 
 
-class truncTrajsModel(object):    
-    def __init__(self, entryTrajsStart, entryTrajsEnd, entryTimes, exitTrajs, exitTimes, exitProbs, MSMtime, tmatrix):
+class truncTrajsModel3D(object):    
+    def __init__(self, entryTrajsStart, entryTrajsEnd, entryTimes, exitTrajs, exitTimes, exitProbs, MSMtime, tmatrix, numPartitions):
         self.entryTrajsStart = entryTrajsStart
         self.entryTrajsEnd = entryTrajsEnd
         self.entryTimes = entryTimes
@@ -26,6 +25,7 @@ class truncTrajsModel(object):
         self.exitProbs = exitProbs
         self.MSMtimestep = MSMtime
         self.tmatrix = tmatrix
+        self.numPartitions = numPartitions
 
 # Sample random position i sphericall shell between rmin and rmax 
 def sampleBathPosition(rmin,rmax):
@@ -120,8 +120,8 @@ for i in range(9):
     for j in range(9):
         statePairs.append((i,j))
 states = range(9)
-pool = Pool(processes=7)
-runs = 10000
+pool = Pool(processes=1)
+runs = 100
 dt = 0.01
 MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=0.01), statePairs)
 MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)

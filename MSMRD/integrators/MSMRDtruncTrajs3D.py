@@ -1,8 +1,7 @@
 import numpy as np
 from ..integrator import integrator
 from ..MSM import MSM
-from MSMRD.discretization import getSectionNumber, getAngles
-
+from ..discretization import  getSectionNumber, getAngles
 
 
 class MSMRDtruncTrajs3D(integrator):

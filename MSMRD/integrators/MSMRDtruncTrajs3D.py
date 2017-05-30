@@ -6,12 +6,14 @@ from MSMRD.discretization import getSectionNumber, getAngles
 
 
 class MSMRDtruncTrajs3D(integrator):
-    def __init__(self, MSM, radius, particle, timestep, truncTrajsModel3D, entryRadius,  boundary):
+    def __init__(self, MSM, radius, particle, timestep, entryRadius, boundary, truncTrajsModel3D):
         # Imported class variables
         self.MSM = MSM
         self.radius = radius
         self.particle = particle
         self.timestep = timestep
+        self.entryRadius = entryRadius
+        self.boundary =  boundary
         self.entryTrajsStart = truncTrajsModel3D.entryTrajsStart
         self.entryTrajsEnd = truncTrajsModel3D.entryTrajsEnd
         self.entryTimes = truncTrajsModel3D.entryTimes
@@ -20,8 +22,6 @@ class MSMRDtruncTrajs3D(integrator):
         self.exitProbs = truncTrajsModel3D.exitProbs
         self.MSMtimestep = truncTrajsModel3D.MSMtimestep
         self.numPartitions = truncTrajsModel3D.numPartitions
-        self.entryRadius = entryRadius
-        self.boundary =  boundary
         # Derived class variables
         self.dim = self.particle.position.size
         self.NentryTrajs = len(self.entryTrajsStart)

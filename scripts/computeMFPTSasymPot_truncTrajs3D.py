@@ -2,13 +2,16 @@ import numpy as np
 import MSMRD as mrd
 import MSMRD.integrators as integrators
 import MSMRD.potentials as potentials
+#from MSMRD.discretization import getSectionNumber, getAngles
 from multiprocessing import Process
 from multiprocessing import Pool
 from functools import partial
 import pickle
 
 MFPTS = np.zeros([9,9])
-minima = np.array([[0.0,0.0], [1.0,0.0] , [1.1, 1.0], [-0.1,0.9], [-1.3,0.8], [-1.0,-0.2], [-0.6,-1.0], [0.9,-0.8], [0.2,-1.5]])
+minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
+          [-1.0,-0.3,-0.4], [0.0,0.0,0.0],   [0.9,-0.1,-0.9], \
+          [-0.7,-1.0,-0.3], [0.0,-0.9,0.1],  [0.8,-0.2,0.8]]
 
 
 class truncTrajsModel(object):    
@@ -19,32 +22,41 @@ class truncTrajsModel(object):
         self.exitTrajs = exitTrajs
         self.exitTimes = exitTimes
         self.exitProbs = exitProbs
-        self.tmatrix = tmatrix
         self.MSMtimestep = MSMtime
+        self.tmatrix = tmatrix
 
-def sampleBathPosition():
-    theta = 2*np.pi * np.random.rand()
-    r = np.sqrt(np.random.rand()*(4.0**2 - 3.0**2) + 3.0**2)
-    return r*np.array([np.sin(theta), np.cos(theta)])
+    # Sample random position i sphericall shell between rmin and rmax 
+    def sampleBathPosition(rmin,rmax):
+        outshell = True
+        while (outshell):
+            rr = np.random.rand()
+            rr = rmax*np.cbrt(rr)
+            if (rr >= rmin && rr <= rmax):
+                outshell = False
+        randcosth = 2.0*np.random.rand() - 1.0
+        randph = 2.0*np.pi*np.random.rand()
+        th = np.arccos(randcosth)
+        posx = rr*np.sin(th)*np.cos(randph)
+        posy = rr*np.sin(th)*np.sin(randph)
+        posz = rr*np.cos(th)
+        pos = np.array([posx, posy, posz])
+        return pos
 
-model = pickle.load(open('../data/models/asym2D/periodicModel_lag10_60partitions_exitCompensation.p'))
+model = pickle.load(open('../data/models/asym3D/periodicModel_lag10_177partitions.p'))
 T = np.copy(model.tmatrix)
 
-def run_mfpts(statePair, runs):
+def run_mfpts(statePair, runs, dt):
     if statePair[0] == statePair[1]:
         return 0.
-    np.random.seed()
-    x0 = 2.0*np.random.rand() - 1.0
-    y0 = 2.0*np.random.rand() - 1.0
-    r1 = np.array([x0, y0])
-    p1 = mrd.particle(r1, 1.0)
+    p1 = mrd.particle(np.zeros(3), 1.0)
     msm = mrd.MSM(model.tmatrix, minima)
     msm.exitStates  = []
-    integrator = integrators.MSMRDtruncTrajs(msm, 4.0, p1, 0.01, model, 2.5)
+    boundary = mrd.reflectiveSphere(4.)
+    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, dt, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
-        integrator.p.position = np.array([0.,0.])
+        integrator.particle.position = np.zeros(3)
         integrator.clock = 0.
         integrator.MSM.state = statePair[0]
         integrator.lastState = statePair[0]
@@ -52,20 +64,18 @@ def run_mfpts(statePair, runs):
         integrator.MSMactive = True
         integrator.lastStateTime = 0
         fpts.append(sim.run_mfpt_state(statePair[1]))
-    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_lag10_exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + dt + '_exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
-def run_mfpts_to_bath(state, runs):
-    np.random.seed()
-    r1 = np.array([0., 0.])
-    p1 = mrd.particle(r1, 1.0)
+def run_mfpts_to_bath(state, runs, dt):
+    p1 = mrd.particle(np.zeros(3), 1.0)
     msm = mrd.MSM(T, minima)
     msm.exitStates  = []
-    integrator = integrators.MSMRDtruncTrajs(msm, 4.0, p1, 0.01, model, 2.5)
+    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, dt, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
-        integrator.p.position = np.array([0.,0.])
+        integrator.particle.position = np.zeros(3)
         integrator.clock = 0.
         integrator.MSM.state = state
         integrator.lastState = state
@@ -74,7 +84,7 @@ def run_mfpts_to_bath(state, runs):
         integrator.MSMactive = True
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt(3.0))
-    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_lag10_exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
 def run_mfpts_to_bath_old(state, runs):
@@ -83,11 +93,11 @@ def run_mfpts_to_bath_old(state, runs):
     p1 = mrd.particle(r1, 1.0)
     msm = mrd.MSM(T, minima)
     msm.exitStates  = []
-    integrator = integrators.MSMRDtruncTrajs(msm, 4.0, p1, 0.01, model, 2.5)
+    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, 0.01, model, 2.5)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
-        integrator.p.position = np.array([0.,0.])
+        integrator.particle.position = np.array([0.,0.])
         integrator.clock = 0.
         integrator.MSM.state = state
         integrator.lastState = state
@@ -95,7 +105,7 @@ def run_mfpts_to_bath_old(state, runs):
         integrator.MSMactive = True
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt(3.0))
-    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_lag10_exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
 
 def run_mfpts_from_bath(state, runs):
     np.random.seed()
@@ -103,18 +113,18 @@ def run_mfpts_from_bath(state, runs):
     p1 = mrd.particle(r1, 1.0)
     msm = mrd.MSM(T, minima)
     msm.exitStates  = []
-    integrator = integrators.MSMRDtruncTrajs(msm, 4.0, p1, 0.01, model, 2.5)
+    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, 0.01, model, 2.5)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
-        integrator.p.position = sampleBathPosition()
+        integrator.particle.position = sampleBathPosition(2.5,4.0)
         integrator.clock = 0.
         integrator.transition = False
         integrator.MSM.state = -1
         integrator.MSMactive = False
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt_state(state))
-    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybrid_box_lag10_exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
     return np.mean(fpts)
 statePairs = []
 for i in range(9):

@@ -8,6 +8,8 @@ from multiprocessing import Pool
 from functools import partial
 import pickle
 
+# Hybrid simulation code to obtain MFPTs between MSM states and to and from the bath state
+
 MFPTS = np.zeros([9,9])
 minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
           [-1.0,-0.3,-0.4], [0.0,0.0,0.0],   [0.9,-0.1,-0.9], \
@@ -65,7 +67,7 @@ def run_mfpts(statePair, runs, dt=0.01):
         integrator.MSMactive = True
         integrator.lastStateTime = 0
         fpts.append(sim.run_mfpt_state(statePair[1]))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + dt + '_exitCompensation3D.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + dt + '_exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
 # Calculate MFPTs from a given state to the bath
@@ -87,7 +89,7 @@ def run_mfpts_to_bath(state, runs, dt = 0.01):
         integrator.MSMactive = True
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt(3.0))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation3D.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
 # Calculate MFPTs from the bath to a given state
@@ -108,7 +110,7 @@ def run_mfpts_from_bath(state, runs, dt = 0.01):
         integrator.MSMactive = False
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt_state(state))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation3D.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
 

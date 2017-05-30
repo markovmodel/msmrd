@@ -25,27 +25,28 @@ class truncTrajsModel(object):
         self.MSMtimestep = MSMtime
         self.tmatrix = tmatrix
 
-    # Sample random position i sphericall shell between rmin and rmax 
-    def sampleBathPosition(rmin,rmax):
-        outshell = True
-        while (outshell):
-            rr = np.random.rand()
-            rr = rmax*np.cbrt(rr)
-            if (rr >= rmin && rr <= rmax):
-                outshell = False
-        randcosth = 2.0*np.random.rand() - 1.0
-        randph = 2.0*np.pi*np.random.rand()
-        th = np.arccos(randcosth)
-        posx = rr*np.sin(th)*np.cos(randph)
-        posy = rr*np.sin(th)*np.sin(randph)
-        posz = rr*np.cos(th)
-        pos = np.array([posx, posy, posz])
-        return pos
+# Sample random position i sphericall shell between rmin and rmax 
+def sampleBathPosition(rmin,rmax):
+    outshell = True
+    while (outshell):
+        rr = np.random.rand()
+        rr = rmax*np.cbrt(rr)
+        if (rr >= rmin && rr <= rmax):
+            outshell = False
+    randcosth = 2.0*np.random.rand() - 1.0
+    randph = 2.0*np.pi*np.random.rand()
+    th = np.arccos(randcosth)
+    posx = rr*np.sin(th)*np.cos(randph)
+    posy = rr*np.sin(th)*np.sin(randph)
+    posz = rr*np.cos(th)
+    pos = np.array([posx, posy, posz])
+    return pos
 
 model = pickle.load(open('../data/models/asym3D/periodicModel_lag10_177partitions.p'))
 T = np.copy(model.tmatrix)
 
-def run_mfpts(statePair, runs, dt):
+# Calculate MFPTs between a pair of states
+def run_mfpts(statePair, runs, dt=0.01):
     if statePair[0] == statePair[1]:
         return 0.
     p1 = mrd.particle(np.zeros(3), 1.0)
@@ -64,13 +65,15 @@ def run_mfpts(statePair, runs, dt):
         integrator.MSMactive = True
         integrator.lastStateTime = 0
         fpts.append(sim.run_mfpt_state(statePair[1]))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + dt + '_exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + dt + '_exitCompensation3D.p', 'wa'))
     return np.mean(fpts)
 
-def run_mfpts_to_bath(state, runs, dt):
+# Calculate MFPTs from a given state to the bath
+def run_mfpts_to_bath(state, runs, dt = 0.01):
     p1 = mrd.particle(np.zeros(3), 1.0)
     msm = mrd.MSM(T, minima)
     msm.exitStates  = []
+    boundary = mrd.reflectiveSphere(4.)
     integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, dt, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
@@ -84,36 +87,17 @@ def run_mfpts_to_bath(state, runs, dt):
         integrator.MSMactive = True
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt(3.0))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation3D.p', 'wa'))
     return np.mean(fpts)
 
-def run_mfpts_to_bath_old(state, runs):
+# Calculate MFPTs from the bath to a given state
+def run_mfpts_from_bath(state, runs, dt = 0.01):
     np.random.seed()
-    r1 = np.array([0., 0.])
-    p1 = mrd.particle(r1, 1.0)
+    p1 = mrd.particle(np.zeros(3), 1.0)
     msm = mrd.MSM(T, minima)
     msm.exitStates  = []
-    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, 0.01, model, 2.5)
-    sim = mrd.simulation(integrator)
-    fpts = []
-    for run in range(runs):
-        integrator.particle.position = np.array([0.,0.])
-        integrator.clock = 0.
-        integrator.MSM.state = state
-        integrator.lastState = state
-        integrator.transition = True
-        integrator.MSMactive = True
-        integrator.MSM.exit = False
-        fpts.append(sim.run_mfpt(3.0))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(state)+'_to_bath_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
-
-def run_mfpts_from_bath(state, runs):
-    np.random.seed()
-    r1 = np.array([0., 0.])
-    p1 = mrd.particle(r1, 1.0)
-    msm = mrd.MSM(T, minima)
-    msm.exitStates  = []
-    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, 0.01, model, 2.5)
+    boundary = mrd.reflectiveSphere(4.)
+    integrator = integrators.MSMRDtruncTrajs3D(msm, 4.0, p1, dt, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
@@ -124,8 +108,11 @@ def run_mfpts_from_bath(state, runs):
         integrator.MSMactive = False
         integrator.MSM.exit = False
         fpts.append(sim.run_mfpt_state(state))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybrid_box_dt' + dt + 'exitCompensation3D.p', 'wa'))
     return np.mean(fpts)
+
+
+# Calculate the MFPTs between all the states
 statePairs = []
 for i in range(9):
     for j in range(9):
@@ -133,9 +120,10 @@ for i in range(9):
 states = range(9)
 pool = Pool(processes=7)
 runs = 10000
-MFPT_list = pool.map(partial(run_mfpts, runs=runs), statePairs)
-MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs), states)
-MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs), states)
+dt = 0.01
+MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=0.01), statePairs)
+MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)
+MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs, dt=0.01), states)
 '''
 for i in range(9):
     for j in range(9):

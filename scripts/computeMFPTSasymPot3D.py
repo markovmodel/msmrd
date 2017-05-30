@@ -7,6 +7,8 @@ from multiprocessing import Pool
 from functools import partial
 import pickle
 
+# Benchmark code of MFPTs between MSM states
+
 MFPTS = np.zeros([9,9])
 minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
           [-1.0,-0.3,-0.4], [0.0,0.0,0.0],   [0.9,-0.1,-0.9], \

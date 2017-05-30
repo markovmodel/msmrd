@@ -33,7 +33,7 @@ def sampleBathPosition(rmin,rmax):
     while (outshell):
         rr = np.random.rand()
         rr = rmax*np.cbrt(rr)
-        if (rr >= rmin && rr <= rmax):
+        if (rr >= rmin and rr <= rmax):
             outshell = False
     randcosth = 2.0*np.random.rand() - 1.0
     randph = 2.0*np.pi*np.random.rand()

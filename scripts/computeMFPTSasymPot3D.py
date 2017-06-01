@@ -7,6 +7,8 @@ from multiprocessing import Pool
 from functools import partial
 import pickle
 
+# Benchmark code of MFPTs between MSM states
+
 MFPTS = np.zeros([9,9])
 minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
           [-1.0,-0.3,-0.4], [0.0,0.0,0.0],   [0.9,-0.1,-0.9], \
@@ -30,7 +32,7 @@ def run_mfpts(statePair, runs, scalef, dt):
     for run in range(runs):
         integrator.pa.position = np.array(minima[statePair[0]])
         fpts.append(sim.run_mfpt_point(np.array(minima[statePair[1]]), 0.2))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) 'sf.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) + 'sf.p', 'wa'))
     return np.mean(fpts)
 
 statePairs = []

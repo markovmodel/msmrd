@@ -44,7 +44,7 @@ def sampleBathPosition(rmin,rmax):
     pos = np.array([posx, posy, posz])
     return pos
 
-model = pickle.load(open('../data/models/asym3D/periodicModel_lag10_177partitions.p'))
+model = pickle.load(open('../data/models/asym3D/periodicModel_lag10_6files_177partitions.p'))
 T = np.copy(model.tmatrix)
 
 # Calculate MFPTs between a pair of states
@@ -120,12 +120,12 @@ for i in range(9):
     for j in range(9):
         statePairs.append((i,j))
 states = range(9)
-pool = Pool(processes=1)
-runs = 100
+pool = Pool(processes=4)
+runs = 1
 dt = 0.01
-MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=0.01), statePairs)
-MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)
-MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs, dt=0.01), states)
+MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=dt), statePairs)
+#MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)
+#MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs, dt=0.01), states)
 '''
 for i in range(9):
     for j in range(9):

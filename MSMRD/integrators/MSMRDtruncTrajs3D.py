@@ -26,7 +26,7 @@ class MSMRDtruncTrajs3D(integrator):
         self.NentryTrajs = len(self.entryTrajsStart)
         self.clock = 0.
         self.sigma = np.sqrt(2.*self.particle.D*self.timestep)
-        self.sampleSize = 5 #sample consists of (step, time, p, MSMstate)
+        self.sampleSize = 6 #sample consists of (step, time, p, MSMstate)
         self.MSMactive = False
         self.lastState = -1
         self.transition = False
@@ -141,6 +141,6 @@ class MSMRDtruncTrajs3D(integrator):
     # test sample
     def sample(self, step):
         if self.MSMactive:
-            return [step, self.clock, 0., 0., self.MSM.state]
+            return [step, self.clock, 0., 0., 0.,  self.MSM.state]
         else:
-            return [step, self.clock, self.particle.position[0], self.particle.position[1], -1]
+            return [step, self.clock, self.particle.position[0], self.particle.position[1],  self.particle.position[2], -1]

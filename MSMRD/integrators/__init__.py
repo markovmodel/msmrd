@@ -8,3 +8,4 @@ from .MSMRDMilestoningReflective import *
 from .MSMRDexitToEntryReflectiveSp import *
 from .MSMRDexitSampling import *
 from .MSMRDtruncTrajs import *
+from .MSMRDtruncTrajsExitTimes import *

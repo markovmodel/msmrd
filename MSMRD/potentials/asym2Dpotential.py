@@ -10,11 +10,11 @@ class asym2Dpotential(object):
                        [-1.0,-0.2], [-0.6,-1.0], [0.9,-0.8], [0.2,-1.5]]
             sigmas = [[0.3,0.3],[0.35,0.35],  [0.4,0.3],  [0.4,0.23], [0.25,0.35], \
                        [0.25,0.32],   [0.4,0.28], [0.4,0.3], [0.21,0.45]]
-	if scalefactor == None:
-		scalefactor = 0.7
-        self.minima = minima
+        if scalefactor == None:
+            scalefactor = 0.7
+        self.minima = minima    
         self.sigmas = sigmas
-	self.scalefactor = scalefactor
+        self.scalefactor = scalefactor
 
     # Define potential as sum of inverted Gaussians from minimas and variances
     def potential(self,r):

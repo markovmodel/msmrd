@@ -277,10 +277,10 @@ cdef class trajDiscretization3DCython:
     cdef public int numPartitions, Ncenters, Nstates
     cdef public object regionsPerCollar, phiCuts
     cdef public list thetaCuts
-    def __init__(self, np.ndarray[double, ndim=2] centers, double boxSize):
+    def __init__(self, np.ndarray[double, ndim=2] centers, double boxSize, innerMSMrad):
         self.centers = centers
         self.boxSize = boxSize
-        self.innerMSMrad = 0.5*boxSize 
+        self.innerMSMrad = innerMSMrad
         self.numPartitions = 0
         self.Ncenters = len(self.centers)
         self.Nstates = self.Ncenters + self.numPartitions

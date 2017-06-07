@@ -15,19 +15,19 @@ def run_mfpts(statePair, runs):
         return 0.
     global MFPTS, minima
     np.random.seed()
-    asympot = potentials.asym2Dpotential(scalefactor = 0.7)
+    asympot = potentials.asym2Dpotential(scalefactor = 2.0)
     x0 = 2.0*np.random.rand() - 1.0
     y0 = 2.0*np.random.rand() - 1.0
     r1 = np.array([x0, y0])
     p1 = mrd.particle(r1, 1.0)
     ringboundary = mrd.reflectiveRing(4.)
-    integrator = integrators.brownianDynamicsSp(asympot, ringboundary, p1, 0.01, 1.0)
+    integrator = integrators.brownianDynamicsSp(asympot, ringboundary, p1, 0.001, 1.0)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
         integrator.pa.position = np.array(minima[statePair[0]])
         fpts.append(sim.run_mfpt_point(np.array(minima[statePair[1]]), 0.2))
-    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_SF2_dt1E-3.p', 'wa'))
     return np.mean(fpts)
 
 statePairs = []
@@ -35,7 +35,7 @@ for i in range(9):
     for j in range(9):
         statePairs.append((i,j))
 
-pool = Pool(processes=8)
+pool = Pool(processes=3)
 MFPT_list = pool.map(partial(run_mfpts, runs=10000), statePairs)
 
 for i in range(9):

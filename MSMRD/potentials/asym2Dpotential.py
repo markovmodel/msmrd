@@ -115,6 +115,7 @@ class asym2Dpotential(object):
         ax.set_zlim(zmin, zmax)
         p = ax.plot_surface(xx, yy, zz, rstride=res, cstride=res, linewidth=0)
 
+# UNFINISHED (SEE GRAD FUNCTION)
 class asym2DpotentialAlt(object):
     def __init__(self, scalefactor=1.0, minima=None, widths=None, depths=None):
         if minima == None:

@@ -9,3 +9,4 @@ from .MSMRDexitToEntryReflectiveSp import *
 from .MSMRDexitSampling import *
 from .MSMRDtruncTrajs import *
 from .MSMRDtruncTrajsExitTimes import *
+from .MSMRDtruncTrajs3D import *

@@ -48,6 +48,7 @@ def run_mfpts(statePair, runs):
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
+        integrator.p.position = np.array([0.,0.])
         integrator.clock = 0.
         integrator.MSM.state = statePair[0]
         integrator.lastState = statePair[0]

@@ -120,10 +120,12 @@ for i in range(9):
     for j in range(9):
         statePairs.append((i,j))
 states = range(9)
-pool = Pool(processes=4)
+pool = Pool(processes=1)
 runs = 1
 dt = 0.01
-MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=dt), statePairs)
+for s in statePairs:
+	run_mfpts(s,1,dt)
+#MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=dt), statePairs)
 #MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)
 #MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs, dt=0.01), states)
 '''

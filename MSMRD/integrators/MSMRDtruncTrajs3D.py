@@ -47,6 +47,7 @@ class MSMRDtruncTrajs3D(integrator):
         oldpos = self.particle.position
         newPosition = self.particle.position + dr
         rNew = np.linalg.norm(newPosition)
+	self.particle.position = newPosition
         if rNew >= self.radius:
             self.boundary.reduce(self.particle, oldpos)
 
@@ -56,21 +57,21 @@ class MSMRDtruncTrajs3D(integrator):
         # find partition bin where particle is entering to 
         sectionNum = getSectionNumber(self.particle.position, self.numPartitions)
         # choose closest entry position from trajectories in bin
-        dist = np.linalg.norm(self.entryTrajsStart[sectionNum] - self.particle.position, axis=1)
+        dist = np.linalg.norm(self.entryTrajsStart[sectionNum-1] - self.particle.position, axis=1)
         entryTraj = np.argmin(dist)
-
-        state = self.entryTrajsEnd[sectionNum][entryTraj]
+        state = self.entryTrajsEnd[sectionNum-1][entryTraj]
         # determine whether entry position is a state or position
         if isinstance(state, np.ndarray):
             self.particle.position = state
             self.MSMactive = False
         else:
+            self.particle.position = np.zeros(3)
             self.MSM.state = state
             self.MSMactive = True
             self.lastState = self.MSM.state
             self.transition = True
         # propagate clock
-        self.clock += self.entryTimes[sectionNum][entryTraj] * self.timestep
+        self.clock += self.entryTimes[sectionNum-1][entryTraj] * self.timestep
         self.MSM.exit = False
 
     #assign closest state as entry state in MSM domain use Gaussian distance as metric
@@ -79,12 +80,12 @@ class MSMRDtruncTrajs3D(integrator):
         # look up bin to search for entry position
         sectionNum = getSectionNumber(self.particle.position, self.numPartitions)
         # compute Gaussian weighted distance to determine closest entry position
-        dist = np.linalg.norm(self.entryTrajsStart[sectionNum] - self.particle.position, axis=1)
+        dist = np.linalg.norm(self.entryTrajsStart[sectionNum-1] - self.particle.position, axis=1)
         weights = np.exp(-dist*dist/(2.0*self.sigma*self.sigma))
         weights /= np.sum(weights)
         # select entry trajectory
         entryTraj = np.random.choice(len(weights), p=weights)
-        state = self.entryTrajsEnd[sectionNum][entryTraj]
+        state = self.entryTrajsEnd[sectionNum-1][entryTraj]
         # determine whether entry position is a state or position
         if isinstance(state, np.ndarray):
             self.particle.position = state
@@ -95,7 +96,7 @@ class MSMRDtruncTrajs3D(integrator):
             self.lastState = self.MSM.state
             self.transition = True
         # propagate clock
-        self.clock += self.entryTimes[angularBin][entryTraj]*self.timestep
+        self.clock += self.entryTimes[sectionNum-1][entryTraj]*self.timestep
         self.MSM.exit = False
 
     # Assign position to particle when exiting MSM using trajectory statistics

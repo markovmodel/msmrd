@@ -36,7 +36,7 @@ def run_mfpts_from_bath(state, runs, scalef, dt, rmin, rmax):
     np.random.seed()
     asympot3D = potentials.asym3Dpotential(scalefactor = scalef)
     p1 = mrd.particle(np.zeros(3), 1.0)
-    sphereboundary = mrd.reflectiveSphere(4.)
+    sphereboundary = mrd.reflectiveSphere(rmax)
     integrator = integrators.brownianDynamicsSp(asympot3D, sphereboundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
     fpts = []
@@ -48,18 +48,18 @@ def run_mfpts_from_bath(state, runs, scalef, dt, rmin, rmax):
     return np.mean(fpts)
 
 # Calculate MFPT from a givent state to the bath
-def run_mfpts_to_bath(state, runs, scalef, dt):
+def run_mfpts_to_bath(state, runs, scalef, dt,rmin, rmax):
     global MFPTS, minima
     np.random.seed()
     asympot3D = potentials.asym3Dpotential(scalefactor = scalef)
     p1 = mrd.particle(np.zeros(3), 1.0)
-    sphereboundary = mrd.reflectiveSphere(4.)
+    sphereboundary = mrd.reflectiveSphere(rmax)
     integrator = integrators.brownianDynamicsSp(asympot3D, sphereboundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
         integrator.pa.position = np.array(minima[state]) 
-        fpts.append(sim.run_mfpt(3.0))
+        fpts.append(sim.run_mfpt(rmin))
     pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(state)+'_bath_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) 'sf.p', 'wa'))
     print 'state '+str(state)+' done'
     return np.mean(fpts)
@@ -68,5 +68,5 @@ def run_mfpts_to_bath(state, runs, scalef, dt):
 # Calculate the MFPTs to and from the bath
 states = [i for i in range(9)]
 pool = Pool(processes=4)
-#MFPT_from_bath = pool.map(partial(run_mfpts_from_bath, runs=100000, scalef = 2.0, dt = 0.01, rmin = 3.0, rmax = 4.0), states)
-MFPT_to_bath = pool.map(partial(run_mfpts_to_bath, runs=10000, scalef = 2.0, dt = 0.01), states)
+MFPT_from_bath = pool.map(partial(run_mfpts_from_bath, runs=10000, scalef = 2.0, dt = 0.01, rmin = 3.0, rmax = 4.0), states)
+MFPT_to_bath = pool.map(partial(run_mfpts_to_bath, runs=10000, scalef = 2.0, dt = 0.01, rmin = 3.0, rmax = 4.0), states)

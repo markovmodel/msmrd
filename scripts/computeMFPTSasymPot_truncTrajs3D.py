@@ -44,7 +44,7 @@ def sampleBathPosition(rmin,rmax):
     pos = np.array([posx, posy, posz])
     return pos
 
-model = pickle.load(open('../data/models/asym3D/periodicModel_lag10_177partitions.p'))
+model = pickle.load(open('../data/models/asym3D/periodicModel_lag10_6files_177partitions.p'))
 T = np.copy(model.tmatrix)
 
 # Calculate MFPTs between a pair of states
@@ -67,7 +67,7 @@ def run_mfpts(statePair, runs, dt=0.01):
         integrator.MSMactive = True
         integrator.lastStateTime = 0
         fpts.append(sim.run_mfpt_state(statePair[1]))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + dt + '_exitCompensation.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybrid_box_dt' + str(dt) + '_exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
 # Calculate MFPTs from a given state to the bath
@@ -120,12 +120,14 @@ for i in range(9):
     for j in range(9):
         statePairs.append((i,j))
 states = range(9)
-pool = Pool(processes=1)
-runs = 100
+pool = Pool(processes=4)
+runs = 10000
 dt = 0.01
-MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=0.01), statePairs)
-MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)
-MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs, dt=0.01), states)
+#for s in statePairs:
+#	run_mfpts(s,1,dt)
+MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=dt), statePairs)
+#MFPT_list = pool.map(partial(run_mfpts_to_bath, runs=runs, dt=0.01), states)
+#MFPT_list = pool.map(partial(run_mfpts_from_bath, runs=runs, dt=0.01), states)
 '''
 for i in range(9):
     for j in range(9):

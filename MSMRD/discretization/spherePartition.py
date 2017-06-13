@@ -196,9 +196,7 @@ def plotPartitionedSphere(numPartitions = None, save = None, plotState = None, c
 # Returns section number in spherical partition from 1 to numPartitions 
 # given some coordinates
    
-def getSectionNumber(coords, numPartitions = None):
-    if numPartitions == None:
-        numPartitions == 20
+def getSectionNumber(coords, numPartitions = 20):
     numRegionsCollar, phis, thetas = partitionSphere(numPartitions)
     theta = np.arctan2(coords[1], coords[0])
     if theta < 0:
@@ -210,10 +208,10 @@ def getSectionNumber(coords, numPartitions = None):
         sectionNum = 1
         return sectionNum
     if currentCollarIndex == len(numRegionsCollar) - 1:
-        sectionNum = numPartions
+        sectionNum = numPartitions
         return sectionNum
     collarThetas = thetas[currentCollarIndex - 1]
-    currentThetaIndex = sum(collarTheta<=theta)
+    currentThetaIndex = sum(collarThetas<=theta)
     sectionNum = sum(numRegionsCollar[0:currentCollarIndex]) + currentThetaIndex
     return sectionNum
 

@@ -43,7 +43,7 @@ def run_mfpts_from_bath(state, runs, scalef, dt, rmin, rmax):
     for run in range(runs):
         integrator.pa.position = sampleBathPosition(rmin, rmax)
         fpts.append(sim.run_mfpt_point(np.array(minima[state]), 0.2))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/bath_'+str(state)+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) 'sf.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/bath_'+str(state)+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) +'sf.p', 'wa'))
     print 'state '+str(state)+' done'
     return np.mean(fpts)
 
@@ -60,7 +60,7 @@ def run_mfpts_to_bath(state, runs, scalef, dt,rmin, rmax):
     for run in range(runs):
         integrator.pa.position = np.array(minima[state]) 
         fpts.append(sim.run_mfpt(rmin))
-    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(state)+'_bath_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) 'sf.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(state)+'_bath_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) + 'sf.p', 'wa'))
     print 'state '+str(state)+' done'
     return np.mean(fpts)
 

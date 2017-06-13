@@ -25,9 +25,9 @@ def sampleBathPosition(rmin,rmax):
     randcosth = 2.0*np.random.rand() - 1.0;
     randph = 2.0*np.pi*np.random.rand();
     theta = np.arccos(randcosth);
-    posx = r*np.sin(th)*np.cos(randph);
-    posy = r*np.sin(th)*np.sin(randph);
-    posz = r*np.cos(th);
+    posx = r*np.sin(theta)*np.cos(randph);
+    posy = r*np.sin(theta)*np.sin(randph);
+    posz = r*np.cos(theta);
     return np.array([posx, posy, posz])
 
 # Calculate MFPT from bath to a given state

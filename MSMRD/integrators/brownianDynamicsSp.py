@@ -9,7 +9,7 @@ class brownianDynamicsSp(integrator):
         self.dim = p1.position.size
         self.pa = p1
         self.timestep = timestep
-        self.time = 0.
+        self.clock = 0.
         self.temp = temp
         self.sigmaA = np.sqrt(2 * self.timestep * self.pa.D)
         self.traj = None
@@ -22,6 +22,7 @@ class brownianDynamicsSp(integrator):
 	oldpos = 1.0*self.pa.position
         self.pa.position += dr1
         self.boundary.reduce(self.pa,oldpos)
+        self.clock += self.timestep
 
     def sample(self, step):
 	if self.dim == 1:

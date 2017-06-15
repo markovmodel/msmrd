@@ -25,13 +25,15 @@ class MSMRDexitSampling(integrator):
         self.sampleSize = 4 #sample consists of (time, p, MSMstate)
         self.MSMactive = False
         self.lastState = -1
+        self.clock = 0.
 
     def above_threshold(self, threshold):
         #assume that threshold is larger than the MSM radius
         if self.MSMactive:
-            return np.linalg.norm(self.MSM.centers[self.MSM.state]) > threshold
-        else:
             return True
+            #return np.linalg.norm(self.MSM.centers[self.MSM.state]) < threshold
+        else:
+            return np.linalg.norm(self.p.position) < threshold
 
     def propagateDiffusion(self, particle):
         #use inversion on circle to keep the particle inside of the simulation radius
@@ -87,9 +89,8 @@ class MSMRDexitSampling(integrator):
             dr = np.random.normal(0., exitSigma, self.dim)
             assert(len(dr) == 2)
             newPosition = internalPosition + dr
-            if counter > 10000:
+            if counter == 1000000:
                 print 'no exit position found'
-                break
         assert newPosition.shape[0] == 2
         self.p.position = newPosition
         self.MSMactive = False
@@ -101,10 +102,12 @@ class MSMRDexitSampling(integrator):
             self.MSM.propagate()
             if self.MSM.exit:
                 self.exitMSM()
+            self.clock += self.MSM.lagtime * self.timestep
         elif not self.MSMactive:
             self.propagateDiffusion(self.p)
             if np.linalg.norm(self.p.position) < self.entryRadius:
                 self.enterMSM()
+            self.clock += self.timestep
 
     def sample(self, step):
         if self.MSMactive:

@@ -7,27 +7,32 @@ from multiprocessing import Pool
 from functools import partial
 import pickle
 
-MFPTS = np.zeros([9,9])
-minima = [[0.0,0.0], [1.0,0.0] , [1.1, 1.0], [-0.1,0.9], [-1.3,0.8], [-1.0,-0.2], [-0.6,-1.0], [0.9,-0.8], [0.2,-1.5]]
+# Benchmark code of MFPTs between MSM states
 
-def run_mfpts(statePair, runs):
+MFPTS = np.zeros([9,9])
+minima = [[-0.9,0.7,0.3] ,  [-0.1,0.9,0.7],  [0.8,0.8,-0.8],  \
+          [-1.0,-0.3,-0.4], [0.0,0.0,0.0],   [0.9,-0.1,-0.9], \
+          [-0.7,-1.0,-0.3], [0.0,-0.9,0.1],  [0.8,-0.2,0.8]]
+
+def run_mfpts(statePair, runs, scalef, dt):
     if statePair[0] == statePair[1]:
         return 0.
     global MFPTS, minima
     np.random.seed()
-    asympot = potentials.asym2Dpotential(scalefactor = 2.0)
+    asympot3D = potentials.asym3Dpotential(scalefactor = scalef)
     x0 = 2.0*np.random.rand() - 1.0
     y0 = 2.0*np.random.rand() - 1.0
-    r1 = np.array([x0, y0])
+    z0 = 2.0*np.random.rand() - 1.0
+    r1 = np.array([x0, y0, z0])
     p1 = mrd.particle(r1, 1.0)
-    ringboundary = mrd.reflectiveRing(4.)
-    integrator = integrators.brownianDynamicsSp(asympot, ringboundary, p1, 0.001, 1.0)
+    sphereboundary = mrd.reflectiveSphere(4.)
+    integrator = integrators.brownianDynamicsSp(asympot3D, sphereboundary, p1, dt, 1.0)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
         integrator.pa.position = np.array(minima[statePair[0]])
         fpts.append(sim.run_mfpt_point(np.array(minima[statePair[1]]), 0.2))
-    pickle.dump(np.array(fpts), open('../data/asym2D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_SF2_dt1E-3.p', 'wa'))
+    pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_' + str(dt) + 'dt_' + str(scalef) + 'sf.p', 'wa'))
     return np.mean(fpts)
 
 statePairs = []
@@ -35,8 +40,8 @@ for i in range(9):
     for j in range(9):
         statePairs.append((i,j))
 
-pool = Pool(processes=3)
-MFPT_list = pool.map(partial(run_mfpts, runs=10000), statePairs)
+pool = Pool(processes=8)
+MFPT_list = pool.map(partial(run_mfpts, runs=10000, scalef=2, dt=0.001), statePairs)
 
 for i in range(9):
     for j in range(9):

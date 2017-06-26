@@ -1,5 +1,6 @@
 from .brownianDynamics import *
 from .brownianDynamicsSp import *
+from .hybridTrajStats3D import *
 from .MSMRD import *
 from .MSMRDSp import *
 from .MSMRDSpReflective import *

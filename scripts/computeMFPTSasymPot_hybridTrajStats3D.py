@@ -46,8 +46,8 @@ def sampleBathPosition(rmin,rmax):
     pos = np.array([posx, posy, posz])
     return pos
 
-model = pickle.load(open('../data/models/asym3D/periodicModel_trajstats_lag20_1file_322partitions.p'))
-T = np.copy(model.tmatrix)
+model = pickle.load(open('../data/models/asym3D/periodicModel_trajstats_lag20_100files_322partitions.p'))
+dataTimestep = 0.01
 
 # Calculate MFPTs between a pair of states
 def run_mfpts(statePair, runs, dt=0.01):
@@ -55,7 +55,7 @@ def run_mfpts(statePair, runs, dt=0.01):
         return 0.
     p1 = mrd.particle(np.zeros(3), 1.0)
     boundary = mrd.reflectiveSphere(4.)
-    integrator = integrators.hybridTrajStats3D(4.0, p1, dt, 2.5, boundary, model)
+    integrator = integrators.hybridTrajStats3D(4.0, p1, dt, dataTimestep, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
@@ -73,7 +73,7 @@ def run_mfpts(statePair, runs, dt=0.01):
 def run_mfpts_to_bath(state, runs, dt = 0.01):
     p1 = mrd.particle(np.zeros(3), 1.0)
     boundary = mrd.reflectiveSphere(4.)
-    integrator = integrators.hybridTrajStats3D(4.0, p1, dt, 2.5, boundary, model)
+    integrator = integrators.hybridTrajStats3D(4.0, p1, dt, dataTimestep, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
@@ -93,7 +93,7 @@ def run_mfpts_from_bath(state, runs, dt = 0.01):
     np.random.seed()
     p1 = mrd.particle(np.zeros(3), 1.0)
     boundary = mrd.reflectiveSphere(4.)
-    integrator = integrators.hybridTrajStats3D(4.0, p1, dt, 2.5, boundary, model)
+    integrator = integrators.hybridTrajStats3D(4.0, p1, dt, dataTimestep, 2.5, boundary, model)
     sim = mrd.simulation(integrator)
     fpts = []
     for run in range(runs):
@@ -114,7 +114,7 @@ for i in range(9):
         statePairs.append((i,j))
 states = range(9)
 pool = Pool(processes=4)
-runs = 10000
+runs = 100
 dt = 0.01
 #for s in statePairs:
 #	run_mfpts(s,1,dt)

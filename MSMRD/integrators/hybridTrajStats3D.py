@@ -7,11 +7,12 @@ from ..discretization import  getSectionNumber, getAngles
 # consistency with other integrators.
 
 class hybridTrajStats3D(integrator):
-    def __init__(self, radius, particle, timestep, entryRadius, boundary, truncTrajsModel3D):
+    def __init__(self, radius, particle, timestep, dataTimestep, entryRadius, boundary, truncTrajsModel3D):
         # Imported class variables
         self.radius = radius
         self.particle = particle
         self.timestep = timestep
+        self.dataTimestep = dataTimestep
         self.entryRadius = entryRadius
         self.boundary =  boundary
         self.entryTrajsStart = truncTrajsModel3D.entryTrajsStart
@@ -106,13 +107,14 @@ class hybridTrajStats3D(integrator):
     # Integrate hybrid model using trajectory statistics over time
     def integrate(self):
         if self.MSMactive:
+            print(self.MSMactive)
             if np.random.rand() <= self.exitProbs[self.MSMstate]:
                     self.exitMSM()
                 else:
                     transitionTime, nextState = self.transitionStates()
                     self.lastState = self.MSM.state
                     self.MSMState = nextState
-                    self.clock += transitionTime*self.timestep
+                    self.clock += transitionTime*self.dataTimestep
         else: #MSM not active
             self.lastPosition = self.particle.position
             self.propagateDiffusion()

@@ -65,7 +65,7 @@ def run_mfpts(statePair, runs, dt=0.01):
         integrator.lastState = statePair[0]
         integrator.MSMactive = True
         integrator.lastStateTime = 0
-        fpts.append(sim.run_mfpt_state(statePair[1]))
+        fpts.append(sim.run_mfpt_state_alt(statePair[1]))
     pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/'+str(statePair[0])+'to'+str(statePair[1])+'_'+str(runs)+'runs_hybridtrajStats_box_dt' + str(dt) + '_exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
@@ -102,7 +102,7 @@ def run_mfpts_from_bath(state, runs, dt = 0.01):
         integrator.transition = False
         integrator.MSMstate = -1
         integrator.MSMactive = False
-        fpts.append(sim.run_mfpt_state(state))
+        fpts.append(sim.run_mfpt_state_alt(state))
     pickle.dump(np.array(fpts), open('../data/asym3D/MFPTS/hybrid/bath_to_'+str(state)+'_'+str(runs)+'runs_hybridtrajStats_box_dt' + dt + 'exitCompensation.p', 'wa'))
     return np.mean(fpts)
 
@@ -114,7 +114,7 @@ for i in range(9):
         statePairs.append((i,j))
 states = range(9)
 pool = Pool(processes=4)
-runs = 100
+runs = 10
 dt = 0.01
 #for s in statePairs:
 #	run_mfpts(s,1,dt)

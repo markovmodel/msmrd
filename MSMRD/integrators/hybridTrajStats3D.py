@@ -33,7 +33,6 @@ class hybridTrajStats3D(integrator):
         self.MSMactive = False
         self.lastState = -1
         self.MSMState = -1
-        self.MSMexit
         self.entryCalls = 0
         self.exitCalls = 0
 
@@ -41,7 +40,6 @@ class hybridTrajStats3D(integrator):
         #assume that threshold is larger than the MSM radius
         if self.MSMactive:
             return True
-            #return np.linalg.norm(self.MSM.centers[self.MSM.state]) < threshold
         else:
             return np.linalg.norm(self.particle.position) < threshold
 
@@ -72,16 +70,16 @@ class hybridTrajStats3D(integrator):
             self.particle.position = np.zeros(3)
             self.MSMstate = state
             self.MSMactive = True
-            self.lastState = self.MSM.state
+            self.lastState = self.MSMstate
         # propagate clock
         self.clock += self.entryTimes[sectionNum-1][entryTraj] * self.timestep
 
     # Assign position to particle when exiting MSM using trajectory statistics
     def exitMSM(self):
         self.exitCalls += 1
-        exitTimeIndex = np.random.choice(len(self.exitTimes[self.MSM.state]))
-        exitTime = self.exitTimes[self.MSM.state][exitTimeIndex] * self.timestep
-        self.particle.position = self.exitTrajs[self.MSM.state][exitTimeIndex]
+        exitTimeIndex = np.random.choice(len(self.exitTimes[self.MSMstate]))
+        exitTime = self.exitTimes[self.MSMstate][exitTimeIndex] * self.timestep
+        self.particle.position = self.exitTrajs[self.MSMstate][exitTimeIndex]
         self.clock += exitTime
         self.MSMactive = False
 
@@ -94,12 +92,12 @@ class hybridTrajStats3D(integrator):
         for ii, prob in enumerate(probarray):
             if rand <= prob:
                 nextState = ii
-                transitionTime = self.chooseTransitionTraj(self.MSMState,nextState)
+                transitionTime = self.chooseTransitionTraj(nextState)
                 break
         return transitionTime, nextState
                 
     def chooseTransitionTraj(self,nextState):
-        possibleTransitionsTrajs = transitionTrajs[self.MSMState][nextState]
+        possibleTransitionsTrajs = self.transitionTrajs[self.MSMState][nextState]
         trajIndex = np.random.randint(len(possibleTransitionsTrajs))
         time = len(possibleTransitionsTrajs[trajIndex])
         return time
@@ -107,14 +105,13 @@ class hybridTrajStats3D(integrator):
     # Integrate hybrid model using trajectory statistics over time
     def integrate(self):
         if self.MSMactive:
-            print(self.MSMactive)
             if np.random.rand() <= self.exitProbs[self.MSMstate]:
                     self.exitMSM()
-                else:
-                    transitionTime, nextState = self.transitionStates()
-                    self.lastState = self.MSM.state
-                    self.MSMState = nextState
-                    self.clock += transitionTime*self.dataTimestep
+            else:
+                transitionTime, nextState = self.transitionStates()
+                self.lastState = self.MSMstate
+                self.MSMState = nextState
+                self.clock += transitionTime*self.dataTimestep
         else: #MSM not active
             self.lastPosition = self.particle.position
             self.propagateDiffusion()
@@ -126,6 +123,6 @@ class hybridTrajStats3D(integrator):
     # test sample
     def sample(self, step):
         if self.MSMactive:
-            return [step, self.clock, 0., 0., 0.,  self.MSM.state]
+            return [step, self.clock, 0., 0., 0.,  self.MSMstate]
         else:
             return [step, self.clock, self.particle.position[0], self.particle.position[1],  self.particle.position[2], -1]

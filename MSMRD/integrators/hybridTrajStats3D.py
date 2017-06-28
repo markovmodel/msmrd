@@ -72,13 +72,13 @@ class hybridTrajStats3D(integrator):
             self.MSMactive = True
             self.lastState = self.MSMstate
         # propagate clock
-        self.clock += self.entryTimes[sectionNum-1][entryTraj] * self.timestep
+        self.clock += self.entryTimes[sectionNum-1][entryTraj] * self.dataTimestep
 
     # Assign position to particle when exiting MSM using trajectory statistics
     def exitMSM(self):
         self.exitCalls += 1
         exitTimeIndex = np.random.choice(len(self.exitTimes[self.MSMstate]))
-        exitTime = self.exitTimes[self.MSMstate][exitTimeIndex] * self.timestep
+        exitTime = self.exitTimes[self.MSMstate][exitTimeIndex] * self.dataTimestep
         self.particle.position = self.exitTrajs[self.MSMstate][exitTimeIndex]
         self.clock += exitTime
         self.MSMactive = False

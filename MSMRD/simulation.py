@@ -89,6 +89,13 @@ class simulation:
             i += 1
         return self.integrator.clock
 
+    def run_mfpt_state_alt(self, state):
+        i=0
+        self.integrator.clock = 0.
+        while self.integrator.MSMstate != state:
+            self.integrator.integrate()
+            i += 1
+        return self.integrator.clock
 
 """
     def histogramTransition(self, bins):

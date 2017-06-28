@@ -283,7 +283,6 @@ cdef class trajDiscretization3DCython:
         self.innerMSMrad = innerMSMrad
         self.numPartitions = 0
         self.Ncenters = len(self.centers)
-        self.Nstates = self.Ncenters + self.numPartitions
     
     
     # Load sphere partition into class
@@ -492,7 +491,7 @@ cdef class trajDiscretization3DCython:
         cdef np.ndarray[double, ndim=1] exitPosition
         cdef list exitPositions = []
         cdef list exitTimes = []
-        for i in range(self.Nstates):
+        for i in range(self.Ncenters):
             exitFromi = []
             timeFromi = []
             exitPositions.append(exitFromi)

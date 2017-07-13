@@ -115,7 +115,7 @@ for i in range(9):
 states = range(9)
 pool = Pool(processes=4)
 runs = 10
-dt = 0.01
+dt = 0.001
 #for s in statePairs:
 #	run_mfpts(s,1,dt)
 MFPT_list = pool.map(partial(run_mfpts, runs=runs, dt=dt), statePairs)

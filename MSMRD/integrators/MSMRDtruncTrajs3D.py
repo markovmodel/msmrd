@@ -47,7 +47,7 @@ class MSMRDtruncTrajs3D(integrator):
         oldpos = self.particle.position
         newPosition = self.particle.position + dr
         rNew = np.linalg.norm(newPosition)
-	self.particle.position = newPosition
+        self.particle.position = newPosition
         if rNew >= self.radius:
             self.boundary.reduce(self.particle, oldpos)
 

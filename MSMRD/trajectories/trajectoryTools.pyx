@@ -272,18 +272,26 @@ cdef class trajDiscretizationCython:
 # Class with tools to discretize 3D trajectories
 
 cdef class trajDiscretization3DCython:
-    cdef object centers
+    cdef object centers, radii2, com
     cdef public double boxSize, innerMSMrad
     cdef public int numPartitions, Ncenters, Nstates
     cdef public object regionsPerCollar, phiCuts
     cdef public list thetaCuts
-    def __init__(self, np.ndarray[double, ndim=2] centers, double boxSize, innerMSMrad):
+    def __init__(self, np.ndarray[double, ndim=2] centers, double boxSize, double innerMSMrad, np.ndarray[double, ndim=1] com=None, np.ndarray[double, ndim=1] radii=None):
         self.centers = centers
         self.boxSize = boxSize
         self.innerMSMrad = innerMSMrad
         self.numPartitions = 0
         self.Ncenters = len(self.centers)
-        self.Nstates = self.Ncenters + self.numPartitions
+        # use default radius of 0.2 for backwards compatibility
+        if radii is None:
+            self.radii2 = np.ones(self.Ncenters) * 0.04
+        else:
+            self.radii2 = radii * radii
+        if com is None:
+            self.com = np.zeros(3, dtype=np.float64)
+        else:
+            self.com = com
     
     
     # Load sphere partition into class
@@ -300,10 +308,10 @@ cdef class trajDiscretization3DCython:
     # Get discrete state in the 3d case (minimas or outside according to the sphere partition) 
     
     cpdef getStatePy(self,np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
-        return self.getState(coord, prevst)      
+        radius = np.linalg.norm(coord - self.com)
+        return self.getState(coord, radius, prevst)
     
-    cdef np.int32_t getState(self, np.ndarray[np.float64_t, ndim=1] coord, np.int32_t prevst):
-        cdef np.float64_t radius = np.linalg.norm(coord)
+    cdef np.int32_t getState(self, np.ndarray[np.float64_t, ndim=1] coord, np.float64_t radius, np.int32_t prevst):
         cdef np.ndarray[np.float64_t, ndim=2] cen2coord
         cdef np.ndarray[np.float64_t, ndim=1] norm
         cdef np.int32_t index, collarNumber, angularState
@@ -311,12 +319,12 @@ cdef class trajDiscretization3DCython:
         if radius < self.innerMSMrad:
             for index in range(self.Ncenters):
                 if (self.centers[index][0] - coord[0])**2 + (self.centers[index][1] - coord[1])**2 + \
-                    (self.centers[index][2] - coord[2])**2 < 0.04:
+                    (self.centers[index][2] - coord[2])**2 < self.radii2[index]:
                     return index
             return prevst
         # outer part
         else:
-            collarNumber = self.getCollarNumber(coord)
+            collarNumber = self.getCollarNumber(coord, radius)
             angularState = self.getAngularState(coord, collarNumber)
             return self.Ncenters + angularState
     
@@ -340,9 +348,8 @@ cdef class trajDiscretization3DCython:
     
     # Get in which collar the coordinates coord are found
     
-    cdef np.int32_t getCollarNumber(self, np.ndarray[double, ndim=1] coord):
-        cdef double rr = sqrt(coord[0]*coord[0] + coord[1]*coord[1] + coord[2]*coord[2])
-        cdef double phi = acos(coord[2]/rr)
+    cdef np.int32_t getCollarNumber(self, np.ndarray[double, ndim=1] coord, np.float64_t radius):
+        cdef double phi = acos(coord[2]/radius)
         cdef int collarNumber = np.where(self.phiCuts<=phi)[0][-1]
         return collarNumber
     
@@ -352,17 +359,19 @@ cdef class trajDiscretization3DCython:
     cpdef getdTraj(self, np.ndarray[np.float64_t, ndim=2] traj):
         cdef np.int32_t k, checker, i 
         cdef np.ndarray[np.int32_t, ndim=1] dTraj
+        cdef np.ndarray[np.float64_t, ndim=1] radii
+        radii = np.linalg.norm(traj - self.com, axis=1)
         # Skip first elements, that might have udefined behavior.
         k = 0
-        checker = self.getState(traj[0], -1)
+        checker = self.getState(traj[0], radii[0], -1)
         while checker < 0 and k < len(traj)-1:
             k += 1
-            checker = self.getState(traj[k], -1)
+            checker = self.getState(traj[k], radii[k], -1)
         dTraj = np.empty(len(traj)-k, dtype=np.int32)
         dTraj[0] = checker
         # Get state for the remainder of the trajectory
         for i in range(1, len(traj)-k):
-            dTraj[i] = self.getState(traj[i+k], dTraj[i-1])
+            dTraj[i] = self.getState(traj[i+k], radii[i+k], dTraj[i-1])
         return dTraj
     
     # Compute a list of discrete trajectories from a list of continuous trajectories
@@ -387,7 +396,7 @@ cdef class trajDiscretization3DCython:
         cdef bint innerTrajActive = False
         cdef np.ndarray[double, ndim=1] norm
         cdef int length
-        norm = np.linalg.norm(traj, axis = 1)
+        norm = np.linalg.norm(traj - self.com, axis = 1)
         trajActive = False
         innerTrajActive = False
         length = len(traj)
@@ -470,7 +479,7 @@ cdef class trajDiscretization3DCython:
         for i in range(len(truncTrajs)):
             if np.any(dTrajs[i] < 0):
                 continue
-            if np.linalg.norm(truncTrajs[i][0]) < self.innerMSMrad:
+            if np.linalg.norm(truncTrajs[i][0] - self.com) < self.innerMSMrad:
                 continue
             entryCoords.append(truncTrajs[i][1])
             entryState = dTrajs[i][0]
@@ -491,7 +500,7 @@ cdef class trajDiscretization3DCython:
         cdef np.ndarray[double, ndim=1] exitPosition
         cdef list exitPositions = []
         cdef list exitTimes = []
-        for i in range(self.Nstates):
+        for i in range(self.Ncenters):
             exitFromi = []
             timeFromi = []
             exitPositions.append(exitFromi)

@@ -79,7 +79,19 @@ class simulation:
         while self.integrator.outside_radius(point, radius):
             self.integrator.integrate()
             i+=1
-        return self.integrator.clock 
+        return self.integrator.clock
+
+    def run_mfpt_points(self, points, radius):
+        i = 0
+        self.integrator.clock = 0.
+        notfound = True
+        while notfound:
+            if np.linalg.norm(self.integrator.pa.position) < 1.7:
+                if np.any(np.linalg.norm(points - self.integrator.pa.position, axis=1) < radius):
+                    notfound = False
+            self.integrator.integrate()
+            i+=1
+        return self.integrator.clock
 
     def run_mfpt_state(self, state):
         i=0
@@ -89,6 +101,21 @@ class simulation:
             i += 1
         return self.integrator.clock
 
+    def run_mfpt_states(self):
+        i=0
+        self.integrator.clock = 0.
+        while  self.integrator.MSM.state == -1:
+            self.integrator.integrate()
+            i += 1
+        return self.integrator.clock
+
+    def run_mfpt_state_alt(self, state):
+        i=0
+        self.integrator.clock = 0.
+        while self.integrator.MSMstate != state:
+            self.integrator.integrate()
+            i += 1
+        return self.integrator.clock
 
 """
     def histogramTransition(self, bins):

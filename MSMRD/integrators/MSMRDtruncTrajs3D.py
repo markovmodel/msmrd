@@ -12,7 +12,7 @@ class MSMRDtruncTrajs3D(integrator):
         self.particle = particle
         self.timestep = timestep
         self.entryRadius = entryRadius
-        self.boundary =  boundary
+        self.boundary = boundary
         self.entryTrajsStart = truncTrajsModel3D.entryTrajsStart
         self.entryTrajsEnd = truncTrajsModel3D.entryTrajsEnd
         self.entryTimes = truncTrajsModel3D.entryTimes
@@ -21,6 +21,12 @@ class MSMRDtruncTrajs3D(integrator):
         self.exitProbs = truncTrajsModel3D.exitProbs
         self.MSMtimestep = truncTrajsModel3D.MSMtimestep
         self.numPartitions = truncTrajsModel3D.numPartitions
+        #trajectory statistics timestep
+        if hasattr(truncTrajsModel3D, 'TStimestep'):
+            print 'using different timestep in exit and entries'
+            self.TStimestep = truncTrajsModel3D.TStimestep
+        else:
+            self.TStimestep = timestep
         # Derived class variables
         self.dim = self.particle.position.size
         self.NentryTrajs = len(self.entryTrajsStart)
@@ -71,7 +77,7 @@ class MSMRDtruncTrajs3D(integrator):
             self.lastState = self.MSM.state
             self.transition = True
         # propagate clock
-        self.clock += self.entryTimes[sectionNum-1][entryTraj] * self.timestep
+        self.clock += self.entryTimes[sectionNum-1][entryTraj] * self.TStimestep
         self.MSM.exit = False
 
     #assign closest state as entry state in MSM domain use Gaussian distance as metric
@@ -96,14 +102,14 @@ class MSMRDtruncTrajs3D(integrator):
             self.lastState = self.MSM.state
             self.transition = True
         # propagate clock
-        self.clock += self.entryTimes[sectionNum-1][entryTraj]*self.timestep
+        self.clock += self.entryTimes[sectionNum-1][entryTraj]*self.TStimestep
         self.MSM.exit = False
 
     # Assign position to particle when exiting MSM using trajectory statistics
     def exitMSM(self):
         self.exitCalls += 1
         exitTimeIndex = np.random.choice(len(self.exitTimes[self.MSM.state]))
-        exitTime = self.exitTimes[self.MSM.state][exitTimeIndex] * self.timestep
+        exitTime = self.exitTimes[self.MSM.state][exitTimeIndex] * self.TStimestep
         self.particle.position = self.exitTrajs[self.MSM.state][exitTimeIndex]
         self.clock += exitTime
         self.MSMactive = False

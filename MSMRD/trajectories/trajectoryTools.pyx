@@ -361,7 +361,7 @@ cdef class trajDiscretization3DCython:
         cdef np.ndarray[np.int32_t, ndim=1] dTraj
         cdef np.ndarray[np.float64_t, ndim=1] radii
         radii = np.linalg.norm(traj - self.com, axis=1)
-        # Skip first elements, that might have udefined behavior.
+        # Skip first elements, that might have undefined behavior.
         k = 0
         checker = self.getState(traj[0], radii[0], -1)
         while checker < 0 and k < len(traj)-1:
@@ -424,6 +424,7 @@ cdef class trajDiscretization3DCython:
                 else:
                     # Data point is inside domain. Add it to the active trajectory
                     currentTraj.append(traj[i])
+        innerTrajs.append(np.array(currentTraj)) # append last part of trajectory that didnt exit
         return innerTrajs
         
     
@@ -451,6 +452,7 @@ cdef class trajDiscretization3DCython:
         cdef int i, initialState
         for dTruncTraj in dTruncTrajs:
             if np.any(dTruncTraj< 0):
+                print "skipped trajectory"
                 #invalid trajectories are skipped
                 continue
             initialState = dTruncTraj[0]
@@ -508,6 +510,7 @@ cdef class trajDiscretization3DCython:
         for i in range(len(dTruncTrajs)):
             if dTruncTrajs[i][0] < self.Ncenters:
                 #skip trajectories which start inside. this shouldnt be too many
+                print "skipped invalid trajectory"
                 continue
             if np.any(dTruncTrajs[i] < self.Ncenters):
                 if dTruncTrajs[i][-1] >= self.Ncenters and len(dTruncTrajs[i]) > 2:

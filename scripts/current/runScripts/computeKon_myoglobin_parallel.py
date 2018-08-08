@@ -33,7 +33,7 @@ boundState = 10#12
 D_CO = 0.25417 # A^2/ps
 radiusThreshold = 0.1 #A
 
-suffix = '_lag150_240partitions_rad25_fixed5.p'
+suffix = '_lag150_240partitions_rad25_fixed_toState_10_bath40_8.p'
 path = '/group/ag_cmb/scratch/dibakma/MSMRD/myoglobin/rates/'
 
 def get_startpoints(numpoints, radius):
@@ -85,18 +85,20 @@ def run_mfpts_from_bath(startPosition, bathRad, dt):
 #maxBathRadius2 = 110.
 #minBathRadius = 50.
 #maxBathRadius = 75.
-minBathRadius = 110
+#minBathRadius = 110
+#maxBathRadius = 158.266943
+minBathRadius = 45.
 maxBathRadius = 158.266943
 
 radii = np.linspace(minBathRadius, maxBathRadius, 5, endpoint=True)
 midpoints = (radii[1:] + radii[:-1])/2.
-runs = 25
+runs = 50
 #midpoints = np.array([])
 print 'running for radii' + str(midpoints)
 pool = Pool(processes=4)
-for radius in radii[1:]:#midpoints:
+for radius in midpoints:
     print 'running radius ' + str(radius)
-    startpoints = get_uniform_startpoints(interactionRadius, radius, runs)
+    startpoints = get_uniform_startpoints(40., radius, runs)
     print 'startpoints created ', startpoints
     FPT_list = pool.map(partial(run_mfpts_from_bath, bathRad=radius, dt=0.5), startpoints)
     dill.dump(FPT_list, open(path+'fpts_on_parallel_'+str(runs)+'runs_uniformStart_R%0.2f' % radius + '_eps0.33_lcs'+suffix, 'wa' ))

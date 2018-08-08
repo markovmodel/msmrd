@@ -34,9 +34,9 @@ interactionRadius = 25.#np.copy(model.interactionRadius)
 # define state which is considered to be the bound state
 boundState = 10#12
 # diffusion constant of Myoglobin
-D_CO = 0.25417 # A^2/ps
+D_CO = 0.25417#0.408#0.25417 # A^2/ps
 
-suffix = '_lag150_eps0.33_240partitions_lcs_rad25_fixed.p'
+suffix = '_lag150_eps0.33_240partitions_lcs_rad25_fixed_R40.p'
 path = '/group/ag_cmb/scratch/dibakma/MSMRD/myoglobin/rates/' 
 
 # Calculate MFPTs from a given state to the bath
@@ -58,7 +58,7 @@ def run_mfpts_to_bath(state, runs, dt = 0.1):
         integrator.transition = True
         integrator.MSMactive = True
         integrator.MSM.exit = False
-        fpts.append(sim.run_mfpt(interactionRadius*1.2))
+        fpts.append(sim.run_mfpt(40.))
     print str(state)+' to bath'
     return np.array(fpts)
 states = [10]

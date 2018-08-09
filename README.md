@@ -3,7 +3,7 @@
 
 This project was born with the desire to couple Markov state models (MSM) derived from Molecular dynamics simulations with particle-based reaction diffusion (RD) simulations. The main goal is to obtain the best of both worlds by efficiently producing simulations at large time- and lengthscales, while still conserving molecular resolution.
 
-The package in this repository is a proof of concept of MSM/RD. It implements the methodology presented in [the MSM/RD paper](https://doi.org/10.1063/1.5020294), and it was used to produce most of the figures and results therein. A more general framework and implementation is currently under development.
+The package in this repository is a proof of concept of MSM/RD. It implements the methodology presented in [this paper](https://doi.org/10.1063/1.5020294), and it was used to produce most of the figures and results. A more general framework and implementation is currently under development.
 
 ## Installation
 ```
